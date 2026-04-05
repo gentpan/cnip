@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "cnip",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["serve", "web-cnip/.output/public", "-l", "4567"],
+      "port": 4567
+    }
+  ]
+}
