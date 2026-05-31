@@ -1,17 +1,17 @@
 [Unit]
-Description=ip2region.io Go backend
-After=network-online.target
-Wants=network-online.target
+Description=cnip.io / ip2region.io Go backend (127.0.0.1:18083)
+After=network.target
 
 [Service]
 Type=simple
-WorkingDirectory=/opt/ip2region.io/server
+WorkingDirectory=/opt/ip2region.io/api
 EnvironmentFile=/opt/ip2region.io/.env
-ExecStartPre=/usr/bin/env bash /opt/ip2region.io/deploy/bootstrap-ip2region-db.sh
-ExecStart=/opt/ip2region.io/bin/ip2region-backend
+Environment=APP_HOST=127.0.0.1
+Environment=APP_PORT=18083
+ExecStart=/opt/ip2region.io/api/bin/ip2region-backend
 Restart=always
-RestartSec=3
-User=root
+RestartSec=5
+LimitNOFILE=65536
 
 [Install]
 WantedBy=multi-user.target
