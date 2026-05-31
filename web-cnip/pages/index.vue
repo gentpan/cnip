@@ -312,16 +312,23 @@ const initMap = async () => {
   })
 }
 
-const detectIpv4ForV6Client = async () => {
+const detectAlternateIp = async (currentIsV6: boolean) => {
   try {
-    const res = await $fetch<string | { ip?: string }>('https://v4.cnip.io/')
+    const url = currentIsV6 ? 'https://v4.cnip.io/' : 'https://v6.cnip.io/'
+    const res = await $fetch<string | { ip?: string }>(url)
     const ip = typeof res === 'string' ? res.trim() : res?.ip?.trim()
-    if (!ip || ip.includes(':')) return
+    if (!ip) return
 
-    selfIps.v4 = ip
-    prefetchLookup(ip)
+    const altIsV6 = ip.includes(':')
+    if (currentIsV6 && !altIsV6) {
+      selfIps.v4 = ip
+      prefetchLookup(ip)
+    } else if (!currentIsV6 && altIsV6) {
+      selfIps.v6 = ip
+      prefetchLookup(ip)
+    }
   } catch {
-    // IPv4 fallback detection is optional.
+    // Alternate IP detection is optional.
   }
 }
 
@@ -371,12 +378,12 @@ onMounted(async () => {
         if (isV6) {
           selfIps.v6 = selfIp
           selfIps.active = 'v6'
-          detectIpv4ForV6Client()
         } else {
           selfIps.v4 = selfIp
           selfIps.active = 'v4'
         }
         await lookup(selfIp)
+        detectAlternateIp(isV6)
       }
     } catch {
       // Keep the page usable even if IP autodetect is unavailable.
