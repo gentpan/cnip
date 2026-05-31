@@ -11,20 +11,6 @@ cnip.io, www.cnip.io {
 
 	@apiIp path /api /api/
 	handle @apiIp {
-		@frontend header Sec-Fetch-Mode cors
-		handle @frontend {
-			header Content-Type application/json
-
-			@cfClientJson header CF-Connecting-IP *
-			handle @cfClientJson {
-				respond `{"ip":"{http.request.header.CF-Connecting-IP}"}` 200
-			}
-
-			handle {
-				respond `{"ip":"{remote_host}"}` 200
-			}
-		}
-
 		header Content-Type text/plain
 
 		@cfClientText header CF-Connecting-IP *
