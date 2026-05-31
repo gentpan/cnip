@@ -77,7 +77,7 @@ const getInitialTheme = (): 'dark' | 'light' => {
   return 'dark'
 }
 const mapTheme = ref<'dark' | 'light'>(getInitialTheme())
-const { pending, error, data, dbUpdatedAt, lookup } = useLookup()
+const { pending, error, data, dbUpdatedAt, lookup, prefetchLookup } = useLookup()
 const mapBaseUrl = computed(() => config.public.mapBaseUrl || 'https://mapbox.mapcdn.io')
 const mapboxToken = computed(() => __MAPBOX_TOKEN__ || '')
 const mapContainer = ref<HTMLElement | null>(null)
@@ -312,6 +312,19 @@ const initMap = async () => {
   })
 }
 
+const detectIpv4ForV6Client = async () => {
+  try {
+    const res = await $fetch<string | { ip?: string }>('https://v4.cnip.io/')
+    const ip = typeof res === 'string' ? res.trim() : res?.ip?.trim()
+    if (!ip || ip.includes(':')) return
+
+    selfIps.v4 = ip
+    prefetchLookup(ip)
+  } catch {
+    // IPv4 fallback detection is optional.
+  }
+}
+
 const switchSelfIp = async (version: 'v4' | 'v6') => {
   const ip = version === 'v4' ? selfIps.v4 : selfIps.v6
   if (!ip) return
@@ -358,6 +371,7 @@ onMounted(async () => {
         if (isV6) {
           selfIps.v6 = selfIp
           selfIps.active = 'v6'
+          detectIpv4ForV6Client()
         } else {
           selfIps.v4 = selfIp
           selfIps.active = 'v4'
