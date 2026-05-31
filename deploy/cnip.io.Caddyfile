@@ -40,6 +40,8 @@ api.cnip.io {
 }
 
 v4.cnip.io {
+	import cors_public
+
 	@root path /
 	handle @root {
 		header Content-Type text/plain
@@ -58,6 +60,8 @@ v4.cnip.io {
 }
 
 v6.cnip.io {
+	import cors_public
+
 	@root path /
 	handle @root {
 		header Content-Type text/plain
