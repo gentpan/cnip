@@ -57,7 +57,15 @@ v4.cnip.io {
 	@root path /
 	handle @root {
 		header Content-Type text/plain
-		respond `{remote_host}` 200
+
+		@cfClient header CF-Connecting-IP *
+		handle @cfClient {
+			respond `{http.request.header.CF-Connecting-IP}` 200
+		}
+
+		handle {
+			respond `{remote_host}` 200
+		}
 	}
 
 	reverse_proxy 127.0.0.1:18083
@@ -67,7 +75,15 @@ v6.cnip.io {
 	@root path /
 	handle @root {
 		header Content-Type text/plain
-		respond `{remote_host}` 200
+
+		@cfClient header CF-Connecting-IP *
+		handle @cfClient {
+			respond `{http.request.header.CF-Connecting-IP}` 200
+		}
+
+		handle {
+			respond `{remote_host}` 200
+		}
 	}
 
 	reverse_proxy 127.0.0.1:18083
