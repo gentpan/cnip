@@ -77,7 +77,7 @@ const getInitialTheme = (): 'dark' | 'light' => {
   return 'dark'
 }
 const mapTheme = ref<'dark' | 'light'>(getInitialTheme())
-const { pending, error, data, dbUpdatedAt, lookup, prefetchLookup } = useLookup()
+const { pending, error, data, dbUpdatedAt, lookup } = useLookup()
 const mapBaseUrl = computed(() => config.public.mapBaseUrl || 'https://mapbox.mapcdn.io')
 const mapboxToken = computed(() => __MAPBOX_TOKEN__ || '')
 const mapContainer = ref<HTMLElement | null>(null)
@@ -312,28 +312,6 @@ const initMap = async () => {
   })
 }
 
-const detectAlternateIp = async (currentIsV6: boolean) => {
-  try {
-    const url = currentIsV6
-      ? 'https://v4.cnip.io/'
-      : 'https://v6.cnip.io/'
-    const res = await $fetch<string | { ip?: string }>(url)
-    const ip = typeof res === 'string' ? res.trim() : res?.ip?.trim()
-    if (!ip) return
-
-    const altIsV6 = ip.includes(':')
-    if (currentIsV6 && !altIsV6) {
-      selfIps.v4 = ip
-      prefetchLookup(ip)
-    } else if (!currentIsV6 && altIsV6) {
-      selfIps.v6 = ip
-      prefetchLookup(ip)
-    }
-  } catch {
-    // Alternate IP detection is optional
-  }
-}
-
 const switchSelfIp = async (version: 'v4' | 'v6') => {
   const ip = version === 'v4' ? selfIps.v4 : selfIps.v6
   if (!ip) return
@@ -341,7 +319,6 @@ const switchSelfIp = async (version: 'v4' | 'v6') => {
   await lookup(ip)
 }
 
-const currentSelfIp = computed(() => selfIps.active === 'v6' ? selfIps.v6 : selfIps.v4)
 const hasBothIps = computed(() => !!(selfIps.v4 && selfIps.v6))
 const isSelfQuery = computed(() => data.value?.query === selfIps.v4 || data.value?.query === selfIps.v6)
 
@@ -386,7 +363,6 @@ onMounted(async () => {
           selfIps.active = 'v4'
         }
         await lookup(selfIp)
-        detectAlternateIp(isV6)
       }
     } catch {
       // Keep the page usable even if IP autodetect is unavailable.
