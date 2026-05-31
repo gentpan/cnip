@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import faviconUrl from '~/assets/favicon.ico?url'
 import logoUrl from '~/assets/logo.svg?url'
 import type mapboxgl from 'mapbox-gl'
 
@@ -403,10 +402,7 @@ onBeforeUnmount(() => {
 })
 
 useHead({
-  title: 'IP归属地查询 - 中国IP地址定位查询工具 | cnip.io',
-  link: [
-    { rel: 'icon', type: 'image/x-icon', href: faviconUrl }
-  ]
+  title: 'IP归属地查询 - 中国IP地址定位查询工具 | cnip.io'
 })
 
 watch(data, async () => {
@@ -563,10 +559,7 @@ watch(mapPoint, () => {
                   </span>
                   <span class="cnp-result-label">{{ field.label }}<span class="cnp-result-label-en">{{ field.en }}</span></span>
                 </div>
-                <span class="cnp-result-value">
-                  {{ resolveLookupValue(item as unknown as Record<string, string>, field.key) }}
-                  <span v-if="field.key === 'country' && (item as unknown as Record<string, string>).countryChar" class="cnp-result-country-code">{{ resolveRegionCode(item as unknown as Record<string, string>) }}</span>
-                </span>
+                <span class="cnp-result-value">{{ resolveLookupValue(item as unknown as Record<string, string>, field.key) }}</span>
                 <span class="cnp-result-info" :data-tip="field.key === 'timeZone' ? formatTimezoneLocal((item as unknown as Record<string, string>).timeZone) || field.desc : field.desc">?</span>
               </div>
             </div>

@@ -23,7 +23,12 @@ export default defineNuxtConfig({
         { name: 'theme-color', content: '#000000' }
       ],
       link: [
-        { rel: 'canonical', href: 'https://cnip.io' }
+        { rel: 'canonical', href: 'https://cnip.io' },
+        { rel: 'icon', href: '/favicon.ico', sizes: 'any' },
+        { rel: 'icon', type: 'image/png', sizes: '32x32', href: '/favicon-32x32.png' },
+        { rel: 'icon', type: 'image/png', sizes: '16x16', href: '/favicon-16x16.png' },
+        { rel: 'apple-touch-icon', sizes: '180x180', href: '/apple-touch-icon.png' },
+        { rel: 'manifest', href: '/site.webmanifest' }
       ],
       script: [
         { defer: true, src: 'https://tongji.giantaccel.com/script.js', 'data-website-id': '1f134deb-e5d2-43aa-ad27-e833becd7661' }
