@@ -299,10 +299,40 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display:none; }
 .cnp-result-card-focus {
   animation: cnpCardFocusFlash 1.8s ease;
 }
-.cnp-result-title-row { display:flex; align-items:center; gap:12px; margin-bottom:12px; }
-.cnp-result-title-left { display:flex; align-items:center; gap:10px; min-width:0; flex-shrink:0; }
-.cnp-result-title-row h3 { margin:0; }
-.cnp-result-title-row .cnp-family-badge { margin-left:auto; }
+.cnp-result-title-row {
+  align-items:center;
+  display:flex;
+  gap:12px;
+  margin-bottom:12px;
+  position:relative;
+}
+.cnp-result-title-left {
+  align-items:center;
+  display:flex;
+  flex-shrink:0;
+  gap:10px;
+  min-width:0;
+  text-align:left;
+  z-index:1;
+}
+.cnp-result-title-row h3 {
+  font-size:clamp(1.55rem,2.35vw,2.05rem);
+  left:50%;
+  line-height:1.15;
+  margin:0;
+  max-width:calc(100% - 460px);
+  min-width:0;
+  overflow:visible;
+  position:absolute;
+  text-align:center;
+  top:50%;
+  transform:translate(-50%,-50%);
+  white-space:nowrap;
+}
+.cnp-result-title-row .cnp-family-badge {
+  margin-left:auto;
+  z-index:1;
+}
 .cnp-dns-resolve-badge {
   display:inline-flex; align-items:center; min-height:34px; padding:0 14px; border-radius:999px;
   font-family:"DM Sans",monospace; font-size:.78rem; font-weight:500;
@@ -694,7 +724,8 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display:none; }
   margin-left:auto; font-size:.72rem; opacity:.4;
 }
 .cnp-docs-subdomains { margin-top:24px; padding-top:20px; border-top:1px solid rgba(128,128,128,.1); }
-.cnp-docs-subdomain-row { margin-top:12px; }
+.cnp-docs-subdomain-row { margin-top:16px; }
+.cnp-docs-example-label { margin:0 0 4px; font-size:.82rem; color:rgba(255,255,255,.5); }
 .cnp-docs-subdomain-info { display:flex; align-items:center; gap:10px; margin-bottom:4px; font-size:.85rem; }
 .cnp-docs-subdomain-host { font-weight:600; font-size:.88rem; }
 
@@ -703,6 +734,7 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display:none; }
 }
 .cnp-theme-light .cnp-docs-copy-btn { color:rgba(0,0,0,.3); }
 .cnp-theme-light .cnp-docs-copy-btn:hover { color:#000; background:rgba(0,0,0,.06); }
+.cnp-theme-light .cnp-docs-example-label { color:rgba(0,0,0,.45); }
 
 .cnp-theme-dark .cnp-view-card {
   background:rgba(0,0,0,.65); border:1px solid rgba(255,255,255,.1);

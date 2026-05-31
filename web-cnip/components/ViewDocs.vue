@@ -29,8 +29,8 @@ const endpoints: Endpoint[] = [
   {
     method: 'GET',
     path: '/geoip',
-    title: 'GeoIP / 当前访客',
-    desc: '自动识别当前请求来源 IP，返回扁平结构的国家、地区、城市、时区、坐标、ASN、ISP 等信息。',
+    title: '查询当前 IP 归属地',
+    desc: '自动检测您的公网 IP 地址，返回完整的归属地信息，包括国家、省份、城市、运营商、ASN、经纬度坐标、时区等。无需传入任何参数，直接调用即可。',
     category: 'GeoIP',
     responseType: 'json',
     params: [],
@@ -40,12 +40,12 @@ const endpoints: Endpoint[] = [
   {
     method: 'GET',
     path: '/geoip/{ip}',
-    title: 'GeoIP / 指定 IP',
-    desc: '查询指定 IPv4 或 IPv6 地址。IPv6 会自动 URL 编码，方便直接在线测试。',
+    title: '查询指定 IP 归属地',
+    desc: '查询任意 IPv4 或 IPv6 地址的归属地信息。适用于批量查询、日志分析、风控系统等场景。',
     category: 'GeoIP',
     responseType: 'json',
     params: [
-      { name: 'ip', required: true, desc: 'IPv4 或 IPv6 地址', location: 'path', placeholder: '例如 8.8.8.8 或 2a09::', defaultValue: '8.8.8.8' }
+      { name: 'ip', required: true, desc: 'IPv4 或 IPv6 地址', location: 'path', placeholder: '例如 8.8.8.8 或 2400:3200::1', defaultValue: '8.8.8.8' }
     ],
     buildUrl: values => `${BASE}/geoip/${encodeURIComponent((values.ip || '').trim())}`,
     buildCurl: values => `curl "${BASE}/geoip/${encodeURIComponent((values.ip || '').trim())}"`
@@ -53,74 +53,51 @@ const endpoints: Endpoint[] = [
   {
     method: 'GET',
     path: '/geoip/{ip}?callback={callback}',
-    title: 'GeoIP / JSONP',
-    desc: '查询指定 IP 并通过 callback 返回 JSONP，适合旧站点通过 script 标签直接接入。',
+    title: 'JSONP 跨域调用',
+    desc: '通过 JSONP 方式返回查询结果，适合前端页面通过 <script> 标签直接调用，无需处理跨域问题。',
     category: 'GeoIP',
     responseType: 'text',
     params: [
       { name: 'ip', required: true, desc: 'IPv4 或 IPv6 地址', location: 'path', placeholder: '例如 8.8.8.8', defaultValue: '8.8.8.8' },
-      { name: 'callback', required: true, desc: 'JSONP 回调函数名', location: 'query', placeholder: '例如 getgeoip', defaultValue: 'getgeoip' }
+      { name: 'callback', required: true, desc: '回调函数名', location: 'query', placeholder: '例如 getgeoip', defaultValue: 'getgeoip' }
     ],
     buildUrl: values => `${BASE}/geoip/${encodeURIComponent((values.ip || '').trim())}?callback=${encodeURIComponent((values.callback || '').trim())}`,
     buildCurl: values => `curl "${BASE}/geoip/${encodeURIComponent((values.ip || '').trim())}?callback=${encodeURIComponent((values.callback || '').trim())}"`
   },
   {
     method: 'GET',
-    path: '/healthz',
-    title: '服务健康检查',
-    desc: '返回最小健康状态，用于监控探活或反向代理自检。',
-    category: 'System',
-    responseType: 'json',
-    params: [],
-    buildUrl: () => `${BASE}/healthz`,
-    buildCurl: () => `curl "${BASE}/healthz"`
-  },
-  {
-    method: 'GET',
-    path: '/',
-    title: '访客 IP / JSON',
-    desc: '返回当前请求者的真实 IP，仅返回 ip 字段。',
-    category: 'System',
-    responseType: 'json',
-    params: [],
-    buildUrl: () => `${BASE}/`,
-    buildCurl: () => `curl "${BASE}/"`
-  },
-  {
-    method: 'GET',
     path: '/lookup?q={q}',
-    title: 'Lookup / IP 或域名',
-    desc: '传统查询接口，支持 IPv4、IPv6、域名输入。域名会先解析 A/AAAA 记录，再返回多结果结构。',
+    title: '综合查询（IP / 域名）',
+    desc: '支持 IP 地址和域名查询。输入域名时会自动解析 DNS，返回所有关联 IP 的归属地信息，适合一次性了解域名背后的服务器分布。',
     category: 'Lookup',
     responseType: 'json',
     params: [
-      { name: 'q', required: true, desc: 'IP 地址或域名', location: 'query', placeholder: '例如 8.8.8.8 或 cnip.io', defaultValue: '8.8.8.8' }
+      { name: 'q', required: true, desc: 'IP 地址或域名', location: 'query', placeholder: '例如 114.114.114.114 或 baidu.com', defaultValue: 'baidu.com' }
     ],
     buildUrl: values => `${BASE}/lookup?q=${encodeURIComponent((values.q || '').trim())}`,
     buildCurl: values => `curl "${BASE}/lookup?q=${encodeURIComponent((values.q || '').trim())}"`
   },
   {
     method: 'GET',
-    path: '/enrich?q={q}',
-    title: 'Enhance / 增强信息',
-    desc: '增强查询接口，补充组织、AS 名称、代理、托管、移动网络、反向解析等信息。',
-    category: 'Lookup',
+    path: '/',
+    title: '获取当前公网 IP',
+    desc: '最简单的方式获取您的公网 IP 地址。返回纯 JSON 格式，只包含 ip 字段，适合脚本和自动化场景。',
+    category: 'IP',
     responseType: 'json',
-    params: [
-      { name: 'q', required: true, desc: 'IP 地址或域名', location: 'query', placeholder: '例如 8.8.8.8 或 cnip.io', defaultValue: '8.8.8.8' }
-    ],
-    buildUrl: values => `${BASE}/enrich?q=${encodeURIComponent((values.q || '').trim())}`,
-    buildCurl: values => `curl "${BASE}/enrich?q=${encodeURIComponent((values.q || '').trim())}"`
+    params: [],
+    buildUrl: () => `${BASE}/`,
+    buildCurl: () => `curl "${BASE}/"`
   }
 ]
 
 const quickExamples = [
-  `curl "${BASE}/geoip"`,
-  `curl "${BASE}/geoip/8.8.8.8"`,
-  `curl "${BASE}/geoip/2a09%3A%3A?callback=getgeoip"`,
-  `curl "${BASE}/"`,
-  `curl "${BASE}/lookup?q=cnip.io"`,
-  `curl "${BASE}/enrich?q=8.8.8.8"`
+  { label: '查询当前 IP 归属地', cmd: `curl "${BASE}/geoip"` },
+  { label: '查询指定 IP（如阿里 DNS）', cmd: `curl "${BASE}/geoip/223.5.5.5"` },
+  { label: '查询域名归属地', cmd: `curl "${BASE}/lookup?q=baidu.com"` },
+  { label: '获取当前公网 IPv4', cmd: 'curl -4 "https://v4.cnip.io"' },
+  { label: '获取当前公网 IPv6', cmd: 'curl -6 "https://v6.cnip.io"' },
+  { label: '获取 IPv4（JSON 格式）', cmd: 'curl -4 "https://v4.cnip.io/json"' },
+  { label: '获取 IPv6（JSON 格式）', cmd: 'curl -6 "https://v6.cnip.io/json"' },
 ]
 
 const activeTab = ref(0)
@@ -251,9 +228,9 @@ initParams(0)
 <template>
   <section class="cnp-view-page">
     <div class="cnp-view-card cnp-docs">
-      <h2>API</h2>
+      <h2>API 文档</h2>
       <p class="cnp-docs-intro">
-        这个页面现在是完整的 API 调试台。公开接口都可以直接运行，带参数的接口可以输入 IP、IPv6、域名或 callback 进行测试。Base URL:
+        cnip.io 提供免费的 IP 归属地查询 API，无需注册、无需密钥，直接调用。支持 IPv4、IPv6 及域名查询，返回 JSON 格式结果。Base URL：
         <code class="cnp-docs-base">{{ BASE }}</code>
       </p>
 
@@ -346,13 +323,14 @@ initParams(0)
       </div>
 
       <div class="cnp-docs-subdomains">
-        <span class="cnp-docs-params-label">Quick Examples</span>
-        <p class="cnp-docs-desc">这些命令可以直接复制验证，也可以切换上面的接口标签后在线跑。</p>
-        <div v-for="example in quickExamples" :key="example" class="cnp-docs-subdomain-row">
+        <span class="cnp-docs-params-label">快速上手</span>
+        <p class="cnp-docs-desc">打开终端，复制以下命令即可快速体验。<code>v4.cnip.io</code> 仅接受 IPv4 请求，<code>v6.cnip.io</code> 仅接受 IPv6 请求；使用 <code>curl -4</code> 或 <code>curl -6</code> 可以避免被本机网络栈自动选错协议。</p>
+        <div v-for="example in quickExamples" :key="example.cmd" class="cnp-docs-subdomain-row">
+          <p class="cnp-docs-example-label">{{ example.label }}</p>
           <div class="cnp-docs-curl-box cnp-docs-curl-sm">
-            <code>{{ example }}</code>
-            <button class="cnp-docs-copy-btn" :title="copiedKey === example ? '复制成功' : '复制'" @click="copyText(example, example)">
-              <span v-if="copiedKey === example" class="cnp-docs-copy-state">已复制</span>
+            <code>{{ example.cmd }}</code>
+            <button class="cnp-docs-copy-btn" :title="copiedKey === example.cmd ? '复制成功' : '复制'" @click="copyText(example.cmd, example.cmd)">
+              <span v-if="copiedKey === example.cmd" class="cnp-docs-copy-state">已复制</span>
               <svg viewBox="0 0 24 24" fill="none"><rect x="9" y="9" width="13" height="13" rx="2" stroke="currentColor" stroke-width="1.5"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1" stroke="currentColor" stroke-width="1.5"/></svg>
             </button>
           </div>

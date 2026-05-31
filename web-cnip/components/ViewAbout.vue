@@ -23,20 +23,6 @@
         </div>
 
         <div class="cnp-about-card">
-          <div class="cnp-about-card-icon cnp-about-icon-enhance">
-            <svg viewBox="0 0 24 24" fill="none"><path d="M13.5 2L3 14h9l-1.5 8L21 10h-9l1.5-8z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
-          </div>
-          <h3>增强数据</h3>
-          <p>异步补充 ip-api Pro 数据源，提供更完整的网络归属信息。</p>
-          <ul>
-            <li>组织 / AS 名称</li>
-            <li>反向解析 (Reverse DNS)</li>
-            <li>代理 / 托管 / 移动网络判断</li>
-            <li>多源融合，提升准确性</li>
-          </ul>
-        </div>
-
-        <div class="cnp-about-card">
           <div class="cnp-about-card-icon cnp-about-icon-update">
             <svg viewBox="0 0 24 24" fill="none"><path d="M21 2v6h-6M3 12a9 9 0 0115.36-6.36L21 8M3 22v-6h6M21 12a9 9 0 01-15.36 6.36L3 16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
           </div>

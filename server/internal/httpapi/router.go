@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"ip2region.io/server/internal/config"
-	"ip2region.io/server/internal/enhance"
 	"ip2region.io/server/internal/iplookup"
 	"ip2region.io/server/internal/model"
 	"ip2region.io/server/internal/updater"
@@ -21,29 +20,34 @@ var jsonpCallbackPattern = regexp.MustCompile(`^[A-Za-z_$][A-Za-z0-9_$\.]*$`)
 type router struct {
 	cfg     config.Config
 	lookup  *iplookup.Service
-	enhance *enhance.Service
 	updater *updater.Manager
 }
 
 type geoIPResponse struct {
 	IP          string `json:"ip"`
+	Continent   string `json:"continent"`
 	CountryCode string `json:"country_code"`
 	Country     string `json:"country"`
 	Region      string `json:"region"`
+	Province    string `json:"province"`
 	City        string `json:"city"`
+	District    string `json:"district"`
 	PostalCode  string `json:"postal_code"`
+	ZipCode     string `json:"zip_code"`
 	Latitude    string `json:"latitude"`
 	Longitude   string `json:"longitude"`
 	TimeZone    string `json:"timezone"`
 	ASN         string `json:"asn"`
 	ISP         string `json:"isp"`
+	AreaCode    string `json:"area_code"`
+	PhoneCode   string `json:"phone_code"`
+	Currency    string `json:"currency"`
 }
 
 func NewRouter(cfg config.Config, lookup *iplookup.Service, updater *updater.Manager) http.Handler {
 	r := &router{
 		cfg:     cfg,
 		lookup:  lookup,
-		enhance: enhance.NewService(cfg),
 		updater: updater,
 	}
 
@@ -51,7 +55,6 @@ func NewRouter(cfg config.Config, lookup *iplookup.Service, updater *updater.Man
 	mux.HandleFunc("/", r.handleSelf)
 	mux.HandleFunc("/healthz", r.handleHealth)
 	mux.HandleFunc("/lookup", r.handleLookup)
-	mux.HandleFunc("/enrich", r.handleEnrich)
 	mux.HandleFunc("/geoip", r.handleGeoIP)
 	mux.HandleFunc("/geoip/", r.handleGeoIP)
 
@@ -153,41 +156,24 @@ func flattenGeoIPResult(result model.LookupResult) geoIPResponse {
 
 	return geoIPResponse{
 		IP:          result.IP,
+		Continent:   result.Continent,
 		CountryCode: countryCode,
 		Country:     result.Country,
 		Region:      result.Province,
+		Province:    result.Province,
 		City:        result.City,
+		District:    result.District,
 		PostalCode:  result.ZipCode,
+		ZipCode:     result.ZipCode,
 		Latitude:    result.Latitude,
 		Longitude:   result.Longitude,
 		TimeZone:    result.TimeZone,
 		ASN:         result.ASN,
 		ISP:         result.ISP,
+		AreaCode:    result.AreaCode,
+		PhoneCode:   result.CityCode,
+		Currency:    result.Currency,
 	}
-}
-
-func (r *router) handleEnrich(w http.ResponseWriter, req *http.Request) {
-	query := strings.TrimSpace(req.URL.Query().Get("q"))
-	if query == "" {
-		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "q is required"})
-		return
-	}
-
-	if r.enhance == nil || !r.enhance.Enabled() {
-		writeJSON(w, http.StatusNotFound, map[string]string{"error": "enhance api disabled"})
-		return
-	}
-
-	ctx, cancel := timeBoundContext(req, r.cfg.EnhanceTimeout)
-	defer cancel()
-
-	result, err := r.enhance.Lookup(ctx, query)
-	if err != nil {
-		writeJSON(w, http.StatusBadGateway, map[string]string{"error": err.Error()})
-		return
-	}
-
-	writeJSON(w, http.StatusOK, result)
 }
 
 func (r *router) withLogging(next http.Handler) http.Handler {

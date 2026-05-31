@@ -1,6 +1,6 @@
-# ip2region.io / cnip.io Lookup
+# cnip.io Lookup
 
-一个基于 `Nuxt 3 + Go` 的高性能 IP 查询站点，使用本地 `ip2region` xdb 数据进行查询，支持：
+一个基于 `Nuxt 3 + Go` 的高性能 IP 查询站点，使用本地 `ip2region` xdb 数据进行查询。生产环境统一以 `cnip.io` 为主站，`ip2region.io` 仅作为跳转别名，支持：
 
 - `IPv4`
 - `IPv6`
@@ -50,7 +50,9 @@ cp .env.example .env
 - `ENHANCE_API_BASE` / `ENHANCE_API_KEY`: `ip-api` Pro 增强接口配置
 - `ENHANCE_API_FIELDS`: 增强接口字段列表
 - `ENHANCE_API_LANG`: 增强接口语言，当前默认 `zh-CN`
-- 生产域名: `ip2region.io` 和 `cnip.io`
+- 生产主域名: `cnip.io`
+- 域名别名: `ip2region.io` 仅跳转到 `cnip.io`
+- API 主入口: `api.cnip.io`
 
 ## 启动
 
@@ -164,7 +166,8 @@ IP2REGION_V6_DOWNLOAD_URL=https://ip2region.net/api/public/data/offline/get_file
 - 仓库内没有附带商业版 xdb 数据，请将你自己的 `v4/v6 xdb` 放到 `data/` 目录或其他自定义路径。
 - 当前实现已经预填了你提供的 `IPv4` 与 `IPv6` 版本信息 API 和下载 API。
 - 域名查询会通过系统 DNS 解析出 `A/AAAA` 记录，再分别查询本地数据库。
-- 当前站点使用域名为 `ip2region.io` 和 `cnip.io`。
+- 当前生产环境统一使用 `cnip.io` 作为站点入口，`ip2region.io` 不再单独部署页面或 API，只做域名跳转。
+- API 统一通过 `api.cnip.io` 提供，前后端只保留一套后端服务。
 - “工作日” 当前按周一到周五计算，未接入中国法定节假日调休表。
 - `cnip.io` 当前采用“本地 `ip2region` 先返回，增强接口异步补充”的模式，增强信息用于补 `org / asname / proxy / hosting / mobile / reverse`。
 - 当前增强接口默认按你提供的 `ip-api` Pro 查询格式调用：`fields=...&lang=zh-CN`

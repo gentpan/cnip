@@ -1,0 +1,17 @@
+[Unit]
+Description=ip2region.io Go backend
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/ip2region.io/server
+EnvironmentFile=/opt/ip2region.io/.env
+ExecStartPre=/usr/bin/env bash /opt/ip2region.io/deploy/bootstrap-ip2region-db.sh
+ExecStart=/opt/ip2region.io/bin/ip2region-backend
+Restart=always
+RestartSec=3
+User=root
+
+[Install]
+WantedBy=multi-user.target

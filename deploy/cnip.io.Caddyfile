@@ -1,0 +1,62 @@
+(cors_public) {
+	header Access-Control-Allow-Origin "*"
+	header Access-Control-Allow-Methods "GET, OPTIONS"
+	header Access-Control-Allow-Headers "*"
+}
+
+cnip.io, www.cnip.io {
+	encode zstd gzip
+	root * /var/www/cnip.io
+	header Cache-Control "no-store"
+
+	@apiIp path /api /api/
+	handle @apiIp {
+		@frontend header Sec-Fetch-Mode cors
+		handle @frontend {
+			header Content-Type application/json
+
+			@cfClientJson header CF-Connecting-IP *
+			handle @cfClientJson {
+				respond `{"ip":"{http.request.header.CF-Connecting-IP}"}` 200
+			}
+
+			handle {
+				respond `{"ip":"{remote_host}"}` 200
+			}
+		}
+
+		header Content-Type text/plain
+
+		@cfClientText header CF-Connecting-IP *
+		handle @cfClientText {
+			respond `{http.request.header.CF-Connecting-IP}` 200
+		}
+
+		handle {
+			respond `{remote_host}` 200
+		}
+	}
+
+	handle_path /api/* {
+		reverse_proxy 127.0.0.1:18083
+	}
+
+	handle {
+		try_files {path} /index.html
+		file_server
+	}
+}
+
+api.cnip.io {
+	@root path /
+	rewrite @root /json
+	reverse_proxy 127.0.0.1:18083
+}
+
+v4.cnip.io {
+	reverse_proxy 127.0.0.1:18083
+}
+
+v6.cnip.io {
+	reverse_proxy 127.0.0.1:18083
+}

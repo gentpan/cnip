@@ -1,0 +1,16 @@
+[Unit]
+Description=ipx.ee Go backend powered by ip-api
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/ipx.ee-ipapi
+EnvironmentFile=/opt/ipx.ee-ipapi/.env
+ExecStart=/opt/ipx.ee-ipapi/bin/ipapi-backend
+Restart=always
+RestartSec=3
+User=root
+
+[Install]
+WantedBy=multi-user.target

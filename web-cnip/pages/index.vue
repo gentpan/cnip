@@ -17,11 +17,6 @@ import iconAntenna from '~/assets/icons/antenna-bars.svg?url'
 import iconPhone from '~/assets/icons/telephone-receiver.svg?url'
 import iconMountain from '~/assets/icons/mountain.svg?url'
 import iconSun from '~/assets/icons/sun-behind-cloud.svg?url'
-import iconSkyscrapers from '~/assets/icons/skyscrapers.svg?url'
-import iconBuildings from '~/assets/icons/icons8-city-buildings.svg?url'
-import iconWorldMap from '~/assets/icons/world-map.svg?url'
-import iconShield from '~/assets/icons/shield.svg?url'
-import iconAmericas from '~/assets/icons/americas.svg?url'
 import iconAsiaAustralia from '~/assets/icons/asia-australia.svg?url'
 
 const iconMap: Record<string, string> = {
@@ -31,9 +26,7 @@ const iconMap: Record<string, string> = {
   'cityscape-at-dusk': iconCityscapeDusk, compass: iconCompass, clock: iconClock,
   'antenna-bars': iconAntenna, 'telephone-receiver': iconPhone,
   mountain: iconMountain, 'sun-behind-cloud': iconSun,
-  skyscrapers: iconSkyscrapers, 'icons8-city-buildings': iconBuildings,
-  'world-map': iconWorldMap, shield: iconShield,
-  americas: iconAmericas, 'asia-australia': iconAsiaAustralia
+  'asia-australia': iconAsiaAustralia
 }
 
 const currentYear = new Date().getFullYear()
@@ -85,9 +78,8 @@ const getInitialTheme = (): 'dark' | 'light' => {
   return 'dark'
 }
 const mapTheme = ref<'dark' | 'light'>(getInitialTheme())
-const { pending, error, data, dbUpdatedAt, lookup } = useLookup()
-const enhance = useEnhance()
-const mapBaseUrl = computed(() => config.public.mapBaseUrl || 'https://map.cleanip.io')
+const { pending, error, data, dbUpdatedAt, lookup, prefetchLookup } = useLookup()
+const mapBaseUrl = computed(() => config.public.mapBaseUrl || 'https://mapbox.mapcdn.io')
 const mapboxToken = computed(() => __MAPBOX_TOKEN__ || '')
 const mapContainer = ref<HTMLElement | null>(null)
 const mapboxLib = shallowRef<typeof import('mapbox-gl').default | null>(null)
@@ -103,7 +95,6 @@ const mapStyle = computed(() =>
 const submit = async () => {
   if (!query.value.trim()) return
   manualQuery.value = true
-  enhance.reset()
   await lookup(query.value)
   manualQuery.value = false
 }
@@ -161,15 +152,6 @@ const lookupFieldGroups = [
   { key: 'elevation', label: '海拔', en: 'Elevation', icon: 'mountain', desc: '所在地海拔高度（米）' },
   { key: 'timeZone', label: '时区', en: 'Timezone', icon: 'clock', desc: 'IANA 标准时区名，如 Asia/Shanghai' },
   { key: 'weatherStation', label: '气象站', en: 'Weather Stn', icon: 'sun-behind-cloud', desc: '最近的气象观测站编码' }
-] as const
-
-const enhanceFieldGroups = [
-  { key: 'org', label: '组织', en: 'Organization', icon: 'skyscrapers', desc: 'IP 所属的组织或公司名称' },
-  { key: 'asname', label: 'AS 名称', en: 'AS Name', icon: 'icons8-city-buildings', desc: '自治系统的注册名称' },
-  { key: 'reverse', label: '反向解析', en: 'Reverse DNS', icon: 'world-map', desc: 'IP 的反向 DNS 解析记录（PTR）' },
-  { key: 'mobile', label: '移动网络', en: 'Mobile', icon: 'antenna-bars', desc: '是否为移动蜂窝网络' },
-  { key: 'proxy', label: '代理', en: 'Proxy', icon: 'shield', desc: '是否检测为代理/VPN 节点' },
-  { key: 'hosting', label: '托管', en: 'Hosting', icon: 'americas', desc: '是否为数据中心/云服务托管 IP' }
 ] as const
 
 const formatTimezoneValue = (tz: string) => {
@@ -234,19 +216,6 @@ const getVisibleLookupFields = (item: Record<string, string>) => {
     return resolveLookupValue(item, field.key) !== '-'
   })
 }
-
-const resolveEnhanceValue = (item: Record<string, unknown>, key: string) => {
-  const value = item[key]
-  if (typeof value === 'boolean') return value ? '是' : '否'
-  if (typeof value === 'string' && value.trim()) return value
-  return '-'
-}
-
-const getVisibleEnhanceFields = (item: Record<string, unknown>) => {
-  return enhanceFieldGroups.filter((field) => resolveEnhanceValue(item, field.key) !== '-')
-}
-
-
 
 const toggleTheme = () => {
   mapTheme.value = mapTheme.value === 'dark' ? 'light' : 'dark'
@@ -347,15 +316,19 @@ const initMap = async () => {
 const detectAlternateIp = async (currentIsV6: boolean) => {
   try {
     const url = currentIsV6
-      ? 'https://api4.ipify.org?format=json'
-      : 'https://api64.ipify.org?format=json'
-    const res = await $fetch<{ ip: string }>(url)
-    if (!res?.ip) return
-    const altIsV6 = res.ip.includes(':')
+      ? 'https://v4.cnip.io/'
+      : 'https://v6.cnip.io/'
+    const res = await $fetch<string | { ip?: string }>(url)
+    const ip = typeof res === 'string' ? res.trim() : res?.ip?.trim()
+    if (!ip) return
+
+    const altIsV6 = ip.includes(':')
     if (currentIsV6 && !altIsV6) {
-      selfIps.v4 = res.ip
+      selfIps.v4 = ip
+      prefetchLookup(ip)
     } else if (!currentIsV6 && altIsV6) {
-      selfIps.v6 = res.ip
+      selfIps.v6 = ip
+      prefetchLookup(ip)
     }
   } catch {
     // Alternate IP detection is optional
@@ -366,7 +339,6 @@ const switchSelfIp = async (version: 'v4' | 'v6') => {
   const ip = version === 'v4' ? selfIps.v4 : selfIps.v6
   if (!ip) return
   selfIps.active = version
-  enhance.reset()
   await lookup(ip)
 }
 
@@ -400,20 +372,21 @@ onMounted(async () => {
 
   if (!query.value.trim()) {
     try {
-      const self = await $fetch<{ ip: string }>('/', {
+      const self = await $fetch<string | { ip?: string }>('/', {
         baseURL: config.public.apiBase || undefined
       })
+      const selfIp = typeof self === 'string' ? self.trim() : self?.ip?.trim()
 
-      if (self?.ip) {
-        const isV6 = self.ip.includes(':')
+      if (selfIp) {
+        const isV6 = selfIp.includes(':')
         if (isV6) {
-          selfIps.v6 = self.ip
+          selfIps.v6 = selfIp
           selfIps.active = 'v6'
         } else {
-          selfIps.v4 = self.ip
+          selfIps.v4 = selfIp
           selfIps.active = 'v4'
         }
-        await lookup(self.ip)
+        await lookup(selfIp)
         detectAlternateIp(isV6)
       }
     } catch {
@@ -430,22 +403,15 @@ onBeforeUnmount(() => {
 })
 
 useHead({
-  title: 'cnip.io - IP Geolocation Lookup | IP 归属地查询',
+  title: 'IP归属地查询 - 中国IP地址定位查询工具 | cnip.io',
   link: [
     { rel: 'icon', type: 'image/x-icon', href: faviconUrl }
   ]
 })
 
-watch(data, async (value) => {
+watch(data, async () => {
   await nextTick()
   syncMapPoint()
-
-  if (!value?.results?.length) return
-  for (const item of value.results) {
-    if (!item.ip) continue
-    if (enhance.data.value[item.ip] || enhance.pending.value[item.ip]) continue
-    await enhance.load(item.ip)
-  }
 })
 
 watch(mapPoint, () => {
@@ -519,7 +485,7 @@ watch(mapPoint, () => {
               </div>
               <div class="cnp-panel-card">
                 <svg class="cnp-panel-icon" viewBox="0 0 24 24" fill="none"><path d="M12 22C6.5 22 2 17.5 2 12S6.5 2 12 2s10 4.5 10 10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M15 19l3 3 4-5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                <div class="cnp-panel-text"><strong>网络归属分析</strong><span>组织、AS、代理、托管判断</span></div>
+                <div class="cnp-panel-text"><strong>网络归属分析</strong><span>ASN、ISP、运营商识别</span></div>
               </div>
               <div class="cnp-panel-card">
                 <svg class="cnp-panel-icon" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.5"/><path d="M16 16l5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
@@ -565,7 +531,6 @@ watch(mapPoint, () => {
             <div class="cnp-result-title-row">
               <div class="cnp-result-title-left">
                 <span v-if="isSelfQuery" class="cnp-self-tag">My IP</span>
-                <h3>{{ item.ip }}</h3>
                 <div v-if="hasBothIps && isSelfQuery" class="cnp-ip-toggle">
                   <button
                     type="button"
@@ -581,29 +546,8 @@ watch(mapPoint, () => {
                   >v6</button>
                 </div>
               </div>
+              <h3>{{ item.ip }}</h3>
               <span class="cnp-family-badge" :class="item.family === 'ipv6' ? 'cnp-badge-v6' : 'cnp-badge-v4'">{{ item.family === 'ipv6' ? 'IPv6' : 'IPv4' }}</span>
-            </div>
-
-            <div class="cnp-enhance-card">
-              <div v-if="enhance.pending[item.ip]" class="cnp-enhance-status">正在补充网络属性信息...</div>
-              <div v-else-if="enhance.error[item.ip]" class="cnp-enhance-status">{{ enhance.error[item.ip] }}</div>
-              <div
-                v-else-if="enhance.data[item.ip] && getVisibleEnhanceFields(enhance.data[item.ip] as unknown as Record<string, unknown>).length"
-                class="cnp-enhance-grid"
-              >
-                <div
-                  v-for="field in getVisibleEnhanceFields(enhance.data[item.ip] as unknown as Record<string, unknown>)"
-                  :key="field.key"
-                  class="cnp-result-row cnp-result-row-icon"
-                >
-                  <div class="cnp-result-meta">
-                    <span class="cnp-result-icon"><img :src="iconMap[field.icon]" alt="" class="cnp-icon-svg"></span>
-                    <span class="cnp-result-label">{{ field.label }}<span class="cnp-result-label-en">{{ field.en }}</span></span>
-                  </div>
-                  <span class="cnp-result-value">{{ resolveEnhanceValue(enhance.data[item.ip] as unknown as Record<string, unknown>, field.key) }}</span>
-                  <span class="cnp-result-info" :data-tip="field.desc">?</span>
-                </div>
-              </div>
             </div>
 
             <div class="cnp-result-table">

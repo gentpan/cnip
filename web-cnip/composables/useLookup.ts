@@ -30,6 +30,14 @@ export interface LookupResponse {
   results: LookupResult[]
 }
 
+type LookupCacheEntry = {
+  response: LookupResponse
+  dbUpdatedAt: string
+  dbVersion: string
+}
+
+const lookupCache = new Map<string, LookupCacheEntry>()
+
 export const useLookup = () => {
   const config = useRuntimeConfig()
   const pending = ref(false)
@@ -38,18 +46,41 @@ export const useLookup = () => {
   const dbUpdatedAt = ref('')
   const dbVersion = ref('')
 
+  const fetchLookup = async (query: string) => {
+    const normalizedQuery = query.trim()
+    const cached = lookupCache.get(normalizedQuery)
+    if (cached) return cached
+
+    const res = await $fetch.raw<LookupResponse>('/lookup', {
+      baseURL: config.public.apiBase,
+      query: { q: normalizedQuery }
+    })
+
+    const entry = {
+      response: res._data as LookupResponse,
+      dbUpdatedAt: res.headers.get('x-db-updated-at') || '',
+      dbVersion: res.headers.get('x-db-version') || ''
+    }
+
+    lookupCache.set(normalizedQuery, entry)
+    return entry
+  }
+
+  const applyLookup = (entry: LookupCacheEntry) => {
+    data.value = entry.response
+    dbUpdatedAt.value = entry.dbUpdatedAt
+    dbVersion.value = entry.dbVersion
+  }
+
   const lookup = async (query: string) => {
+    const normalizedQuery = query.trim()
+    if (!normalizedQuery) return
+
     pending.value = true
     error.value = ''
 
     try {
-      const res = await $fetch.raw<LookupResponse>('/lookup', {
-        baseURL: config.public.apiBase,
-        query: { q: query.trim() }
-      })
-      data.value = res._data
-      dbUpdatedAt.value = res.headers.get('x-db-updated-at') || ''
-      dbVersion.value = res.headers.get('x-db-version') || ''
+      applyLookup(await fetchLookup(normalizedQuery))
     } catch (err) {
       error.value = err instanceof Error ? err.message : '查询失败'
       data.value = null
@@ -60,12 +91,24 @@ export const useLookup = () => {
     }
   }
 
+  const prefetchLookup = async (query: string) => {
+    const normalizedQuery = query.trim()
+    if (!normalizedQuery || lookupCache.has(normalizedQuery)) return
+
+    try {
+      await fetchLookup(normalizedQuery)
+    } catch {
+      // Prefetch is optional; the interactive lookup path reports errors.
+    }
+  }
+
   return {
     pending,
     error,
     data,
     dbUpdatedAt,
     dbVersion,
-    lookup
+    lookup,
+    prefetchLookup
   }
 }
