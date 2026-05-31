@@ -42,6 +42,20 @@ api.cnip.io {
 v4.cnip.io {
 	import cors_public
 
+	@json path /json /json/
+	handle @json {
+		header Content-Type application/json
+
+		@cfClientJson header CF-Connecting-IP *
+		handle @cfClientJson {
+			respond `{"ip":"{http.request.header.CF-Connecting-IP}"}` 200
+		}
+
+		handle {
+			respond `{"ip":"{remote_host}"}` 200
+		}
+	}
+
 	@root path /
 	handle @root {
 		header Content-Type text/plain
@@ -61,6 +75,20 @@ v4.cnip.io {
 
 v6.cnip.io {
 	import cors_public
+
+	@json path /json /json/
+	handle @json {
+		header Content-Type application/json
+
+		@cfClientJson header CF-Connecting-IP *
+		handle @cfClientJson {
+			respond `{"ip":"{http.request.header.CF-Connecting-IP}"}` 200
+		}
+
+		handle {
+			respond `{"ip":"{remote_host}"}` 200
+		}
+	}
 
 	@root path /
 	handle @root {
