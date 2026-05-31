@@ -1,173 +1,194 @@
-# cnip.io Lookup
+# cnip.io
 
-一个基于 `Nuxt 3 + Go` 的高性能 IP 查询站点，使用本地 `ip2region` xdb 数据进行查询。生产环境统一以 `cnip.io` 为主站，`ip2region.io` 仅作为跳转别名，支持：
+`cnip.io` 是一个基于 `Nuxt 3 + Go` 的双栈 IP 查询站点。项目重点是前端体验、IPv4/IPv6 自动探测、本地数据库查询、静态站点部署和服务端运维配置。
 
-- `IPv4`
-- `IPv6`
-- 域名输入后自动解析并查询
-- `ip2region.net` 自动更新 API
+本 README 只保留项目说明和维护流程，不提供公开接口文档、调用地址、下载地址、密钥格式或生产环境敏感信息。
+
+## 功能
+
+- IPv4 / IPv6 双栈查询
+- 浏览器自动识别当前公网 IP
+- 当前 IP 的 IPv4 / IPv6 快速切换
+- 支持输入域名后解析并查询
+- 使用本地 `ip2region` xdb 数据库
+- 支持数据库定期更新和服务热加载
 - 移动端优先适配
-- 轻量前端，尽量降低首屏开销
+- 前端静态化部署，后端仅作为内部服务运行
 
 ## 目录
 
 ```text
 .
-├── data/                 # 放置 ip2region_v4.xdb / ip2region_v6.xdb
-├── server/               # Go 后端
-└── web/                  # Nuxt 3 前端
+├── data/                 # 数据库占位目录，真实 xdb 不提交
+├── deploy/               # systemd / 反向代理部署模板
+├── ipapi/                # 辅助服务
+├── server/               # 主 Go 后端服务
+├── web-cnip/             # cnip.io 前端
+├── web-ip2region/        # ip2region 相关前端
+└── web/                  # 历史/共享前端实现
 ```
 
-## 自动更新设计
+## 架构
 
-根据 `ip2region.net` 官方自动更新文档，更新流程如下：
+生产环境采用静态前端 + 内部后端服务的方式：
 
-1. 调用“版本信息 API”读取最新 `released_at`
-2. 读取本地 xdb header 中的 `createdAt`
-3. 将本地时间标准化到当天 `13:00:00` 后与远端版本比较
-4. 如有更新，则调用“外用下载 API”下载到临时文件
-5. 下载完成后原子替换本地 xdb 文件
-6. 通知 Go 服务热重载 searcher
+- Nuxt 构建静态文件，由 Web 服务器直接提供。
+- Go 后端只监听服务器本地地址。
+- 反向代理负责 TLS、缓存策略、真实客户端 IP 传递和站点路由。
+- xdb 数据库文件只放在服务器，不进入 Git。
+- IPv4 / IPv6 探测由受控网络路径完成，避免依赖第三方探测服务。
 
-当前实现的自动更新时间为：中国时间每月 `1 号 13:00`。如果 `1 号` 是非工作日，则顺延到下一个工作日的 `13:00` 执行。程序本身不做额外限速判断，是否下载更新完全由远端 `released_at` 与本地 xdb `createdAt` 的比较结果决定。
+## 配置
 
-## 环境变量
+使用各目录中的 `.env.example` 作为模板，真实配置只保存在服务器或本地开发环境。
 
-复制根目录环境变量：
+配置项按用途分为：
 
-```bash
-cp .env.example .env
-```
+- IPv4 / IPv6 数据库路径
+- 数据库版本检查和下载配置
+- 后端监听地址和端口
+- 管理和更新凭据
+- 前端运行时基础路径
+- 地图资源代理配置
+- 可选增强数据源配置
 
-重点配置：
+不要提交以下内容：
 
-- `IP2REGION_V4_DB` / `IP2REGION_V6_DB`: 本地 xdb 路径
-- `IP2REGION_V4_VERSION_URL` / `IP2REGION_V6_VERSION_URL`: 版本信息 API
-- `IP2REGION_V4_DOWNLOAD_URL` / `IP2REGION_V6_DOWNLOAD_URL`: 外用下载 API
-- `UPDATE_TIMEZONE`: 自动更新使用的时区，当前默认 `Asia/Shanghai`
-- `NUXT_PUBLIC_API_BASE`: 前端请求后端 API 的地址
-- `ENHANCE_ENABLED`: 是否开启异步增强查询
-- `ENHANCE_API_BASE` / `ENHANCE_API_KEY`: `ip-api` Pro 增强接口配置
-- `ENHANCE_API_FIELDS`: 增强接口字段列表
-- `ENHANCE_API_LANG`: 增强接口语言，当前默认 `zh-CN`
-- 生产主域名: `cnip.io`
-- 域名别名: `ip2region.io` 仅跳转到 `cnip.io`
-- API 主入口: `api.cnip.io`
+- 生产 `.env`
+- xdb 数据库
+- 服务商密钥
+- 下载链接
+- SSH 私钥
+- 服务器账号或密码
 
-## 启动
+## 本地开发
 
-### 1. 后端
+### 后端
 
 ```bash
-cd /Users/gentpan/projects/Ip2region.io/server
+cd server
 go mod tidy
 go run ./cmd/api
 ```
 
-### 2. 前端
+### 前端
 
 ```bash
-cd /Users/gentpan/projects/Ip2region.io/web
+cd web-cnip
 npm install
 npm run dev
 ```
 
-## API
+本地开发时，通过环境变量把前端运行时请求指向本地后端或本地反向代理。
 
-GeoIP 查询接口已独立部署在：
+## 构建
+
+### 后端
+
+```bash
+cd server
+go build -o ip2region-backend ./cmd/api
+```
+
+生产 Linux 二进制：
+
+```bash
+cd server
+GOOS=linux GOARCH=amd64 go build -o ip2region-backend ./cmd/api
+```
+
+### 前端
+
+```bash
+cd web-cnip
+npm run build
+```
+
+静态产物目录：
 
 ```text
-https://api.cnip.io
+web-cnip/.output/public
 ```
 
-### GeoIP 查询
+## 部署
 
-```http
-GET https://api.cnip.io/geoip
-GET https://api.cnip.io/geoip?callback=getgeoip
-GET https://api.cnip.io/geoip/8.8.8.8
-GET https://api.cnip.io/geoip/2404%3A6800%3A4005%3A80a%3A%3A200e
-GET https://api.cnip.io/geoip/2404%3A6800%3A4005%3A80a%3A%3A200e?callback=getgeoip
-```
+部署模板位于 `deploy/`。
 
-- `/geoip`：自动识别当前请求者的真实 IP
-- `/geoip/{ip}`：查询指定 IPv4 / IPv6 地址
-- `callback`：可选，传入后返回 JSONP
-
-返回字段为扁平结构，例如：
-
-```json
-{
-  "ip": "185.222.222.222",
-  "country_code": "DE",
-  "country": "Germany",
-  "region": "North Rhine-Westphalia",
-  "city": "Dusseldorf",
-  "postal_code": "40210",
-  "latitude": "51.221720",
-  "longitude": "6.776160",
-  "timezone": "Europe/Berlin",
-  "asn": "AS24013",
-  "isp": "Example ISP"
-}
-```
-
-### 访客 IP
-
-```http
-GET https://api.cnip.io/
-```
-
-### 查询接口
-
-```http
-GET https://api.cnip.io/lookup?q=8.8.8.8
-GET https://api.cnip.io/lookup?q=cnip.io
-```
-
-### 异步增强信息
-
-```http
-GET https://api.cnip.io/enrich?q=8.8.8.8
-GET https://api.cnip.io/enrich?q=cnip.io
-```
-
-## `ip2region.net` 自动更新接口说明
-
-本项目实现基于官方文档的如下接口模式：
-
-- 版本信息 API 示例：
-  `https://ip2region.net/api/public/data/offline/ver_latest?...`
-- 下载 API 示例：
-  `https://ip2region.net/api/public/data/offline/get_file?...`
-
-当前已写入的 `IPv4 高级版` 示例配置：
+当前生产后端服务目录：
 
 ```text
-IP2REGION_V4_VERSION_URL=https://ip2region.net/api/public/data/offline/ver_latest?t=6cb96dca7d.3e0.69944e4b.OF002@GJB
-IP2REGION_V4_DOWNLOAD_URL=https://ip2region.net/api/public/data/offline/get_file?t=6cb96dca7d.3e0.69944e4b.OF002@GJB&v=v001@full
+/opt/ip2region.io/api
 ```
 
-当前已写入的 `IPv6` 版本信息 API：
+后端二进制路径：
 
 ```text
-IP2REGION_V6_VERSION_URL=https://ip2region.net/api/public/data/offline/ver_latest?t=646a0d6627.3e0.69944e81.OS002@GJB
-IP2REGION_V6_DOWNLOAD_URL=https://ip2region.net/api/public/data/offline/get_file?t=646a0d6627.3e0.69944e81.OS002@GJB&v=v001@full
+/opt/ip2region.io/api/bin/ip2region-backend
 ```
 
-参考资料：
+前端静态文件独立部署到反向代理配置的站点根目录。
 
-- [商用数据-自动更新](https://ip2region.net/doc/data/ipv4_data_update)
-- [商用数据](https://ip2region.net/products/offline)
-- [ip2region GitHub](https://github.com/lionsoul2014/ip2region)
+后端更新后：
 
-## 说明
+```bash
+systemctl restart ip2region-backend
+systemctl is-active ip2region-backend
+```
 
-- 仓库内没有附带商业版 xdb 数据，请将你自己的 `v4/v6 xdb` 放到 `data/` 目录或其他自定义路径。
-- 当前实现已经预填了你提供的 `IPv4` 与 `IPv6` 版本信息 API 和下载 API。
-- 域名查询会通过系统 DNS 解析出 `A/AAAA` 记录，再分别查询本地数据库。
-- 当前生产环境统一使用 `cnip.io` 作为站点入口，`ip2region.io` 不再单独部署页面或 API，只做域名跳转。
-- API 统一通过 `api.cnip.io` 提供，前后端只保留一套后端服务。
-- “工作日” 当前按周一到周五计算，未接入中国法定节假日调休表。
-- `cnip.io` 当前采用“本地 `ip2region` 先返回，增强接口异步补充”的模式，增强信息用于补 `org / asname / proxy / hosting / mobile / reverse`。
-- 当前增强接口默认按你提供的 `ip-api` Pro 查询格式调用：`fields=...&lang=zh-CN`
+反向代理配置更新后：
+
+```bash
+caddy validate --config /etc/caddy/Caddyfile
+systemctl reload caddy
+```
+
+## 数据库更新
+
+后端支持本地 xdb 数据库刷新流程：
+
+1. 检查上游版本信息。
+2. 对比本地数据库元信息。
+3. 有新版本时下载到临时文件。
+4. 下载完成后原子替换。
+5. 热加载新的查询数据。
+
+仓库不包含商业数据库文件。生产数据库只保存在服务器。
+
+## 验证
+
+提交或部署前建议执行：
+
+```bash
+cd server
+go test ./...
+```
+
+```bash
+cd ipapi
+go test ./...
+```
+
+```bash
+cd web-cnip
+npm run build
+```
+
+前端改动需要重点检查：
+
+- 首页当前 IP 是否显示
+- IPv4 / IPv6 切换状态是否正确
+- IPv6 是否完整显示
+- 查询结果是否居中且不遮挡标签
+- 移动端布局是否正常
+
+## 安全要求
+
+- README 不写公开调用入口。
+- README 不写接口路径和请求示例。
+- README 不写生产下载链接。
+- README 不写任何密钥、凭据或账号信息。
+- 数据库和生产配置只保存在服务器。
+
+## License
+
+Private project. All rights reserved.
