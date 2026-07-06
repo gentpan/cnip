@@ -121,6 +121,16 @@ function copy(text: string) {
   navigator.clipboard?.writeText(text).catch(() => {})
 }
 
+async function readRunnerResponse(res: Response, responseType: Endpoint['responseType']) {
+  const raw = await res.text()
+  if (responseType !== 'json') return raw
+  try {
+    return JSON.stringify(JSON.parse(raw), null, 2)
+  } catch {
+    return raw
+  }
+}
+
 function Docs() {
   const [active, setActive] = useState(0)
   const endpoint = endpoints[active]
@@ -132,9 +142,10 @@ function Docs() {
   const runner = useMutation({
     mutationFn: async () => {
       const start = performance.now()
-      const res = await fetch(endpoint.buildUrl(values, DOCS_REQUEST_BASE))
+      const requestBase = endpoint.path === '/' ? DOCS_BASE : DOCS_REQUEST_BASE
+      const res = await fetch(endpoint.buildUrl(values, requestBase))
       const type = res.headers.get('content-type')?.split(';')[0] || (endpoint.responseType === 'json' ? 'application/json' : 'text/plain')
-      const text = endpoint.responseType === 'json' ? JSON.stringify(await res.json(), null, 2) : await res.text()
+      const text = await readRunnerResponse(res, endpoint.responseType)
       return { status: res.status, ms: Math.round(performance.now() - start), type, text, isJson: endpoint.responseType === 'json' }
     },
     onSuccess: (data) => {
