@@ -65,6 +65,26 @@ function detectQueryInputType(value: string): QueryInputType | null {
   return null
 }
 
+function queryRoute(value: string, type: QueryInputType | null) {
+  const normalized = value.trim().replace(/\.$/, '')
+  if (!normalized) return '/'
+  if (type === 'domain') return `/domain/${encodeURIComponent(normalized.toLowerCase())}`
+  return `/ip/${encodeURIComponent(normalized)}`
+}
+
+function decodeRouteValue(value: string) {
+  try {
+    return decodeURIComponent(value)
+  } catch {
+    return value
+  }
+}
+
+function queryFromPath(pathname: string) {
+  const match = pathname.match(/^\/(?:domain|ip)\/(.+)$/)
+  return match ? decodeRouteValue(match[1]) : ''
+}
+
 const queryInputTypeLabels: Record<QueryInputType, string> = {
   ipv4: 'IPv4',
   ipv6: 'IPv6',
@@ -94,7 +114,7 @@ export function AppShell() {
   const mapMenuRef = useRef<HTMLDivElement>(null)
   const navigate = useNavigate()
   const location = useLocation()
-  const isLookupRoute = location.pathname === '/'
+  const isLookupRoute = location.pathname === '/' || location.pathname.startsWith('/domain/') || location.pathname.startsWith('/ip/')
   const allowedMapStyles = getAllowedMapStyles(visitorIsChina)
   const queryInputType = detectQueryInputType(query)
 
@@ -123,6 +143,15 @@ export function AppShell() {
   useEffect(() => {
     if (!isLookupRoute) setShowQueryCards(false)
   }, [isLookupRoute])
+
+  useEffect(() => {
+    const pathQuery = queryFromPath(location.pathname)
+    if (pathQuery) {
+      setQuery(pathQuery)
+    } else if (location.pathname === '/' && !window.location.search) {
+      setQuery('')
+    }
+  }, [location.pathname])
 
   useEffect(() => {
     let cancelled = false
@@ -156,7 +185,7 @@ export function AppShell() {
     event.preventDefault()
     const value = query.trim()
     if (!value) return
-    navigate({ to: '/', search: { q: value } })
+    navigate({ to: queryRoute(value, detectQueryInputType(value)) })
   }
 
   const toggleTheme = () => {

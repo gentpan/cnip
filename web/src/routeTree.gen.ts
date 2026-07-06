@@ -12,6 +12,8 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as DocsRouteImport } from './routes/docs'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as IpTargetRouteImport } from './routes/ip.$target'
+import { Route as DomainTargetRouteImport } from './routes/domain.$target'
 
 const DocsRoute = DocsRouteImport.update({
   id: '/docs',
@@ -28,35 +30,53 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const IpTargetRoute = IpTargetRouteImport.update({
+  id: '/ip/$target',
+  path: '/ip/$target',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DomainTargetRoute = DomainTargetRouteImport.update({
+  id: '/domain/$target',
+  path: '/domain/$target',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/docs': typeof DocsRoute
+  '/domain/$target': typeof DomainTargetRoute
+  '/ip/$target': typeof IpTargetRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/docs': typeof DocsRoute
+  '/domain/$target': typeof DomainTargetRoute
+  '/ip/$target': typeof IpTargetRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/about': typeof AboutRoute
   '/docs': typeof DocsRoute
+  '/domain/$target': typeof DomainTargetRoute
+  '/ip/$target': typeof IpTargetRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about' | '/docs'
+  fullPaths: '/' | '/about' | '/docs' | '/domain/$target' | '/ip/$target'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about' | '/docs'
-  id: '__root__' | '/' | '/about' | '/docs'
+  to: '/' | '/about' | '/docs' | '/domain/$target' | '/ip/$target'
+  id: '__root__' | '/' | '/about' | '/docs' | '/domain/$target' | '/ip/$target'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AboutRoute: typeof AboutRoute
   DocsRoute: typeof DocsRoute
+  DomainTargetRoute: typeof DomainTargetRoute
+  IpTargetRoute: typeof IpTargetRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -82,6 +102,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/ip/$target': {
+      id: '/ip/$target'
+      path: '/ip/$target'
+      fullPath: '/ip/$target'
+      preLoaderRoute: typeof IpTargetRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/domain/$target': {
+      id: '/domain/$target'
+      path: '/domain/$target'
+      fullPath: '/domain/$target'
+      preLoaderRoute: typeof DomainTargetRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -89,6 +123,8 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AboutRoute: AboutRoute,
   DocsRoute: DocsRoute,
+  DomainTargetRoute: DomainTargetRoute,
+  IpTargetRoute: IpTargetRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -58,7 +58,7 @@ export const websiteJsonLd = {
   description: '免费的 IP、IPv6、域名解析与地图定位查询工具。',
   potentialAction: {
     '@type': 'SearchAction',
-    target: `${SITE_URL}/?q={search_term_string}`,
+    target: `${SITE_URL}/domain/{search_term_string}`,
     'query-input': 'required name=search_term_string',
   },
 }
