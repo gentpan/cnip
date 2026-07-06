@@ -41,32 +41,32 @@ const latestDatabaseLabel = computed(() => {
 })
 
 const lookupFieldGroups = [
-  { key: 'continent', label: '洲', icon: '◎' },
-  { key: 'country', label: '国家', icon: '◉' },
-  { key: 'province', label: '省份', icon: '◐' },
-  { key: 'city', label: '城市', icon: '⌂' },
-  { key: 'district', label: '区县', icon: '▣' },
-  { key: 'isp', label: '运营商', icon: '⌁' },
-  { key: 'longitude', label: '经度', icon: '→' },
-  { key: 'latitude', label: '纬度', icon: '↑' },
-  { key: 'areaCode', label: '行政区码', icon: '#' },
-  { key: 'cityCode', label: '城市区号', icon: '☎' },
-  { key: 'zipCode', label: '邮编', icon: '✉' },
-  { key: 'timeZone', label: '时区', icon: '◷' },
-  { key: 'currency', label: '货币', icon: '¥' },
-  { key: 'asn', label: 'ASN', icon: 'A' },
-  { key: 'elevation', label: '海拔', icon: '△' },
-  { key: 'weatherStation', label: '气象站', icon: '☼' },
-  { key: 'countryChar', label: '国家简称', icon: 'CN' }
+  { key: 'continent', label: '洲', icon: '/icons/globe-with-meridians.svg' },
+  { key: 'country', label: '国家', icon: '/icons/world-map.svg' },
+  { key: 'province', label: '省份', icon: '/icons/pushpin.svg' },
+  { key: 'city', label: '城市', icon: '/icons/cityscape.svg' },
+  { key: 'district', label: '区县', icon: '/icons/cityscape-at-dusk.svg' },
+  { key: 'isp', label: '运营商', icon: '/icons/satellite-antenna.svg' },
+  { key: 'longitude', label: '经度', icon: '/icons/compass.svg' },
+  { key: 'latitude', label: '纬度', icon: '/icons/compass.svg' },
+  { key: 'areaCode', label: '行政区码', icon: '/icons/antenna-bars.svg' },
+  { key: 'cityCode', label: '城市区号', icon: '/icons/telephone-receiver.svg' },
+  { key: 'zipCode', label: '邮编', icon: '/icons/mailbox.svg' },
+  { key: 'timeZone', label: '时区', icon: '/icons/clock.svg' },
+  { key: 'currency', label: '货币', icon: '/icons/ip-stamp.svg' },
+  { key: 'asn', label: 'ASN', icon: '/icons/paperclip.svg' },
+  { key: 'elevation', label: '海拔', icon: '/icons/mountain.svg' },
+  { key: 'weatherStation', label: '气象站', icon: '/icons/sun-behind-cloud.svg' },
+  { key: 'countryChar', label: '国家简称', icon: '/icons/globe-with-meridians.svg' }
 ] as const
 
 const enhanceFieldGroups = [
-  { key: 'org', label: '组织', icon: '⌘' },
-  { key: 'asname', label: 'AS 名称', icon: 'AS' },
-  { key: 'reverse', label: '反向解析', icon: '↩' },
-  { key: 'mobile', label: '移动网络', icon: '⇄' },
-  { key: 'proxy', label: '代理', icon: '⛨' },
-  { key: 'hosting', label: '托管', icon: '▤' }
+  { key: 'org', label: '组织', icon: '/icons/skyscrapers.svg' },
+  { key: 'asname', label: 'AS 名称', icon: '/icons/antenna-bars.svg' },
+  { key: 'reverse', label: '反向解析', icon: '/icons/compass.svg' },
+  { key: 'mobile', label: '移动网络', icon: '/icons/telephone-receiver.svg' },
+  { key: 'proxy', label: '代理', icon: '/icons/shield.svg' },
+  { key: 'hosting', label: '托管', icon: '/icons/cityscape-at-dusk.svg' }
 ] as const
 
 const resolveLookupValue = (item: Record<string, string>, key: string) => {
@@ -299,7 +299,7 @@ watch(data, async (value) => {
             <div v-else-if="enhance.data[item.ip]" class="cnp-enhance-grid">
               <div v-for="field in enhanceFieldGroups" :key="field.key" class="cnp-result-row cnp-result-row-icon">
                 <div class="cnp-result-meta">
-                  <span class="cnp-result-icon">{{ field.icon }}</span>
+                  <span class="cnp-result-icon"><img :src="field.icon" alt="" aria-hidden="true"></span>
                   <span class="cnp-result-label">{{ field.label }}</span>
                 </div>
                 <span class="cnp-result-value">{{ resolveEnhanceValue(enhance.data[item.ip] as unknown as Record<string, unknown>, field.key) }}</span>
@@ -310,7 +310,7 @@ watch(data, async (value) => {
           <div class="cnp-result-table">
             <div v-for="field in lookupFieldGroups" :key="field.key" class="cnp-result-row cnp-result-row-icon">
               <div class="cnp-result-meta">
-                <span class="cnp-result-icon">{{ field.icon }}</span>
+                <span class="cnp-result-icon"><img :src="field.icon" alt="" aria-hidden="true"></span>
                 <span class="cnp-result-label">{{ field.label }}</span>
               </div>
               <span class="cnp-result-value">{{ resolveLookupValue(item as unknown as Record<string, string>, field.key) }}</span>

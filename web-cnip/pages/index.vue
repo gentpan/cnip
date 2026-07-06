@@ -78,7 +78,7 @@ const getInitialTheme = (): 'dark' | 'light' => {
 }
 const mapTheme = ref<'dark' | 'light'>(getInitialTheme())
 const { pending, error, data, dbUpdatedAt, lookup, prefetchLookup } = useLookup()
-const mapBaseUrl = computed(() => config.public.mapBaseUrl || 'https://mapbox.mapcdn.io')
+const mapBaseUrl = computed(() => config.public.mapBaseUrl || '')
 const mapboxToken = computed(() => __MAPBOX_TOKEN__ || '')
 const mapContainer = ref<HTMLElement | null>(null)
 const mapboxLib = shallowRef<typeof import('mapbox-gl').default | null>(null)
@@ -278,7 +278,10 @@ const initMap = async () => {
   const mapbox = module.default
   mapboxLib.value = mapbox
   mapbox.accessToken = mapboxToken.value
-  mapbox.baseApiUrl = mapBaseUrl.value.replace(/\/$/, '')
+  const baseApiUrl = mapBaseUrl.value.replace(/\/$/, '')
+  if (baseApiUrl) {
+    mapbox.baseApiUrl = baseApiUrl
+  }
 
   const vh = window.innerHeight
   const fillZoom = Math.ceil(Math.log2(vh / 256) * 100) / 100

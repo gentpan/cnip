@@ -169,6 +169,12 @@
   width:28px; height:28px; display:inline-flex; align-items:center; justify-content:center; flex:0 0 28px;
   color:#8d8d95; font-size:.86rem; font-weight:700; line-height:1; border:1px solid #dfdfe4; border-radius:999px;
 }
+.cnp-result-icon img {
+  width:18px;
+  height:18px;
+  object-fit:contain;
+  display:block;
+}
 .cnp-result-label { font-size:1rem; color:#22222b; font-weight:500; }
 .cnp-result-value { color:#171717; line-height:1.6; text-align:right; font-size:.96rem; }
 .cnp-footer {

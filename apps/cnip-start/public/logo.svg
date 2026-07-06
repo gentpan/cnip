@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="cnip.io 首页">
+  <path fill="#0052D9" d="M32 0c25.603 0 32 6.397 32 32S57.603 64 32 64 0 57.603 0 32 6.397 0 32 0Z"/>
+  <path fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="4.8" d="M16 31.4 32 17.8l16 13.6"/>
+  <path fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="4.8" d="M21 29v17h22V29"/>
+  <path fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="4.8" d="M28 46V34h8v12"/>
+</svg>

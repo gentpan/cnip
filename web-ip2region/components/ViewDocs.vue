@@ -23,7 +23,7 @@ type Endpoint = {
   buildCurl: (values: Record<string, string>) => string
 }
 
-const BASE = 'https://api.ip2region.io'
+const BASE = 'https://api.cnip.io'
 
 const endpoints: Endpoint[] = [
   {
