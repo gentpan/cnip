@@ -4,8 +4,8 @@ This repository contains the current `cnip.io` TanStack Start web app plus the l
 
 ## Current Layout
 
-- `apps/web/`: current TanStack Start frontend for `cnip.io`
-- `server/`: lookup backend powered by local `ip2region` xdb files
+- `web/`: current TanStack Start frontend for `cnip.io`
+- `api/`: lookup backend powered by local `ip2region` xdb files
 - `deploy/`: production proxy and service templates
 - `data/`: local database placeholders and runtime data
 

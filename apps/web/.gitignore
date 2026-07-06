@@ -1,7 +1,0 @@
-node_modules
-dist
-.tanstack/tmp
-.vite
-.env
-.env.local
-.env.*.local

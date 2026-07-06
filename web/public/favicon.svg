@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="cnip.io">
+  <path fill="#0052D9" d="M32 0c25.603 0 32 6.397 32 32S57.603 64 32 64 0 57.603 0 32 6.397 0 32 0Z"/>
+  <path fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="4.8" d="m14.5 19 12-5.2 11 5.2 12-5.2v31.2l-12 5.2-11-5.2-12 5.2V19Z"/>
+  <path fill="none" stroke="#fff" stroke-linecap="round" stroke-linejoin="round" stroke-width="4.8" d="M26.5 13.8v31.2M37.5 19v31.2"/>
+</svg>

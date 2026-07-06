@@ -9,8 +9,8 @@ node_modules/
 .nitro/
 .cache/
 dist/
-server/bin
-server/.cache
+api/bin
+api/.cache
 data/*.xdb
 data/*.tmp.xdb
 !.gitkeep

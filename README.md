@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="apps/web/public/favicon.svg" width="92" height="92" alt="cnip logo" />
+  <img src="web/public/favicon.svg" width="92" height="92" alt="cnip logo" />
   <p>IP, IPv6, domain DNS and map-based geolocation lookup for cnip.io.</p>
   <p>
     <img src="https://img.shields.io/badge/cnip-IP%20Geolocation-09090b?style=for-the-badge" alt="cnip IP Geolocation" />
@@ -19,7 +19,7 @@
 
 `cnip` is the frontend and deployment workspace for [cnip.io](https://cnip.io), a lightweight IP and domain lookup experience with map-based location context, IPv4 / IPv6 support, domain DNS resolution results, and public API documentation.
 
-The current production frontend lives in `apps/web` and is built with TanStack Start, TanStack Router, TanStack Query, Vite, React, and TypeScript.
+The current production frontend lives in `web`, and the lookup backend lives in `api`.
 
 ### Features
 
@@ -54,17 +54,16 @@ The current production frontend lives in `apps/web` and is built with TanStack S
 
 ```text
 .
-├── apps/
-│   └── web/              # Current TanStack Start production app
+├── web/                  # Current TanStack Start production frontend
+├── api/                  # Lookup backend service
 ├── deploy/               # Deployment notes and service templates
-├── data/                 # Local database placeholders and runtime data
-└── server/               # Lookup backend service
+└── data/                 # Local database placeholders and runtime data
 ```
 
 ### Local Development
 
 ```bash
-cd apps/web
+cd web
 npm install
 npm run dev -- --host 127.0.0.1 --port 3010
 ```
@@ -74,16 +73,16 @@ Open `http://127.0.0.1:3010`.
 ### Build
 
 ```bash
-cd apps/web
+cd web
 npm run build
 ```
 
-The production output is generated in `apps/web/dist`.
+The production output is generated in `web/dist`.
 
 ### Production Start
 
 ```bash
-cd apps/web
+cd web
 npm run start
 ```
 
@@ -91,7 +90,7 @@ The production service uses `server.mjs`, which serves the Vite client assets fi
 
 ### Environment
 
-`apps/web` defaults to safe runtime values:
+`web` defaults to safe runtime values:
 
 | Variable | Purpose | Default |
 | --- | --- | --- |
@@ -111,7 +110,7 @@ Production secrets, private keys, database files, and server-only credentials sh
 Before deploying or pushing changes:
 
 ```bash
-cd apps/web
+cd web
 npm exec tsc -- --noEmit
 npm run build
 ```
@@ -156,7 +155,7 @@ Private project. All rights reserved.
 
 `cnip` 是 [cnip.io](https://cnip.io) 的前端与部署工作区，提供轻量的 IP、IPv6、域名解析与地图定位查询体验。项目支持当前公网 IP 查询、IPv4 / IPv6 查询、域名多解析结果展示、地图坐标联动和公开 API 文档。
 
-当前生产前端位于 `apps/web`，技术栈为 TanStack Start、TanStack Router、TanStack Query、Vite、React 和 TypeScript。
+当前生产前端位于 `web`，查询后端位于 `api`。
 
 ### 功能
 
@@ -191,17 +190,16 @@ Private project. All rights reserved.
 
 ```text
 .
-├── apps/
-│   └── web/              # 当前 TanStack Start 生产前端
+├── web/                  # 当前 TanStack Start 生产前端
+├── api/                  # 查询后端服务
 ├── deploy/               # 部署说明和服务模板
-├── data/                 # 本地数据库占位和运行数据
-└── server/               # 查询后端服务
+└── data/                 # 本地数据库占位和运行数据
 ```
 
 ### 本地开发
 
 ```bash
-cd apps/web
+cd web
 npm install
 npm run dev -- --host 127.0.0.1 --port 3010
 ```
@@ -211,16 +209,16 @@ npm run dev -- --host 127.0.0.1 --port 3010
 ### 构建
 
 ```bash
-cd apps/web
+cd web
 npm run build
 ```
 
-生产构建产物位于 `apps/web/dist`。
+生产构建产物位于 `web/dist`。
 
 ### 生产启动
 
 ```bash
-cd apps/web
+cd web
 npm run start
 ```
 
@@ -228,7 +226,7 @@ npm run start
 
 ### 环境变量
 
-`apps/web` 默认包含安全的运行时配置：
+`web` 默认包含安全的运行时配置：
 
 | 变量 | 用途 | 默认值 |
 | --- | --- | --- |
@@ -248,7 +246,7 @@ npm run start
 部署或推送前建议执行：
 
 ```bash
-cd apps/web
+cd web
 npm exec tsc -- --noEmit
 npm run build
 ```
