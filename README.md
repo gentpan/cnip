@@ -1,6 +1,5 @@
 <div align="center">
   <img src="apps/web/public/favicon.svg" width="92" height="92" alt="cnip logo" />
-  <h1>cnip</h1>
   <p>IP, IPv6, domain DNS and map-based geolocation lookup for cnip.io.</p>
   <p>
     <img src="https://img.shields.io/badge/cnip-IP%20Geolocation-09090b?style=for-the-badge" alt="cnip IP Geolocation" />
