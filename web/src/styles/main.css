@@ -688,6 +688,9 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display:none; }
   background:#0052d9;
   color:#fff;
 }
+.cnp-dns-resolver-tab.active .cnp-dns-resolver-icon[data-resolver="system"] img {
+  filter:brightness(0) invert(1);
+}
 .cnp-dns-resolver-tab.loading {
   cursor:wait;
 }
