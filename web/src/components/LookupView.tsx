@@ -53,14 +53,7 @@ function initialDNSResolver(): DNSResolverId {
 
 function DNSResolverIcon({ id }: { id: DNSResolverId }) {
   if (id === 'google') {
-    return (
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path fill="#4285f4" d="M21.6 12.23c0-.74-.07-1.46-.19-2.14H12v4.05h5.38a4.6 4.6 0 0 1-2 3.02v2.62h3.24c1.9-1.75 2.98-4.32 2.98-7.55Z" />
-        <path fill="#34a853" d="M12 22c2.7 0 4.97-.9 6.62-2.42l-3.24-2.62c-.9.6-2.05.96-3.38.96-2.6 0-4.8-1.76-5.59-4.12H3.06v2.7A10 10 0 0 0 12 22Z" />
-        <path fill="#fbbc05" d="M6.41 13.8A6 6 0 0 1 6.1 12c0-.62.11-1.23.31-1.8V7.5H3.06a10 10 0 0 0 0 9l3.35-2.7Z" />
-        <path fill="#ea4335" d="M12 6.08c1.47 0 2.79.5 3.82 1.49l2.87-2.87C16.96 3.02 14.69 2 12 2a10 10 0 0 0-8.94 5.5l3.35 2.7C7.2 7.84 9.4 6.08 12 6.08Z" />
-      </svg>
-    )
+    return <img src="/icons/dns-google.svg" alt="" aria-hidden="true" />
   }
   if (id === 'cloudflare') {
     return (

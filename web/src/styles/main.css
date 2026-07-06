@@ -648,7 +648,8 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display:none; }
   justify-content:center;
   color:#0052d9;
 }
-.cnp-dns-resolver-icon svg {
+.cnp-dns-resolver-icon svg,
+.cnp-dns-resolver-icon img {
   width:24px;
   height:24px;
   display:block;
