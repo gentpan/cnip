@@ -62,17 +62,14 @@ const endpoints: Endpoint[] = [
     method: 'GET',
     path: '/lookup?q={q}',
     title: '综合查询（IP / 域名）',
-    desc: '统一查询入口。q 可以是 IPv4、IPv6 或域名；输入域名时会先解析 DNS，再返回 resolvedIps 和每个 IP 对应的归属地结果。resolver 可指定 cloudflare、system、google、aliyun 或 tencent。',
+    desc: '统一查询入口。q 可以是 IPv4、IPv6 或域名；输入域名时会使用默认 DNS 解析，再返回 resolvedIps 和每个 IP 对应的归属地结果。多个 DNS 解析源仅在前端查询页面提供切换。',
     category: 'Lookup',
     responseType: 'json',
     params: [
       { name: 'q', required: true, desc: 'IP 地址或域名', location: 'query', placeholder: '例如 114.114.114.114 或 baidu.com', defaultValue: 'baidu.com' },
-      { name: 'resolver', required: false, desc: '域名解析源：cloudflare / system / google / aliyun / tencent', location: 'query', placeholder: '例如 cloudflare', defaultValue: 'cloudflare' },
     ],
     buildUrl: (values, base = DOCS_BASE) => {
       const params = new URLSearchParams({ q: (values.q || '').trim() })
-      const resolver = (values.resolver || '').trim()
-      if (resolver && resolver !== 'cloudflare') params.set('resolver', resolver)
       return `${base}/lookup?${params.toString()}`
     },
   },
