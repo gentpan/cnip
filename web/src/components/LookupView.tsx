@@ -65,9 +65,7 @@ function DNSResolverIcon({ id }: { id: DNSResolverId }) {
     return <img src="/icons/dns-tencent.svg" alt="" aria-hidden="true" />
   }
   return (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path fill="currentColor" d="M5 5.5A2.5 2.5 0 0 1 7.5 3h9A2.5 2.5 0 0 1 19 5.5v13A2.5 2.5 0 0 1 16.5 21h-9A2.5 2.5 0 0 1 5 18.5v-13Zm3 1v11h8v-11H8Zm1.5 1.8h5v1.4h-5V8.3Zm0 3h5v1.4h-5v-1.4Zm0 3h3.2v1.4H9.5v-1.4Z" />
-    </svg>
+    <img src="/icons/dns-system.svg" alt="" aria-hidden="true" />
   )
 }
 
