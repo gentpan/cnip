@@ -56,12 +56,7 @@ function DNSResolverIcon({ id }: { id: DNSResolverId }) {
     return <img src="/icons/dns-google.svg" alt="" aria-hidden="true" />
   }
   if (id === 'cloudflare') {
-    return (
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path fill="#f48120" d="M15.4 8.8a4.5 4.5 0 0 0-8.46 1.62 3.77 3.77 0 0 0-3.44 3.75c0 .27.03.54.09.8h13.15a2.98 2.98 0 0 0-1.34-6.17Z" />
-        <path fill="#faae40" d="M17.42 10.85h-.34a4.9 4.9 0 0 1 .15 1.2 4.77 4.77 0 0 1-4.77 4.77H5.04A4.85 4.85 0 0 0 8.42 18h8.99a3.58 3.58 0 1 0 0-7.15Z" />
-      </svg>
-    )
+    return <img src="/icons/dns-cloudflare.svg" alt="" aria-hidden="true" />
   }
   if (id === 'aliyun') {
     return <img src="/icons/dns-aliyun.svg" alt="" aria-hidden="true" />
