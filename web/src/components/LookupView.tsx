@@ -1,4 +1,4 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { keepPreviousData, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   fetchCurrentIp,
@@ -257,8 +257,9 @@ export function LookupView({ search }: { search: LookupSearch }) {
 
   const lookupQuery = useQuery({
     queryKey: ['lookup', selectedQuery, dnsResolver],
-    queryFn: () => fetchLookup(selectedQuery, dnsResolver),
+    queryFn: ({ signal }) => fetchLookup(selectedQuery, dnsResolver, signal),
     enabled: Boolean(selectedQuery),
+    placeholderData: keepPreviousData,
   })
 
   const entry = lookupQuery.data as LookupEntry | undefined
@@ -287,6 +288,7 @@ export function LookupView({ search }: { search: LookupSearch }) {
   }, [currentIpQuery.data, queryClient])
 
   const selectDNSResolver = (resolver: DNSResolverId) => {
+    if (resolver === dnsResolver) return
     setDnsResolver(resolver)
     window.localStorage.setItem('cnip-dns-resolver', resolver)
     setFocusedIp('')
@@ -467,9 +469,10 @@ export function LookupView({ search }: { search: LookupSearch }) {
               <div className="cnp-dns-resolver-tabs" aria-label="DNS 解析源">
                 {DNS_RESOLVERS.map((resolver) => (
                   <button
-                    className={`cnp-dns-resolver-tab${dnsResolver === resolver.id ? ' active' : ''}`}
+                    className={`cnp-dns-resolver-tab${dnsResolver === resolver.id ? ' active' : ''}${lookupQuery.isFetching && dnsResolver === resolver.id ? ' loading' : ''}`}
                     type="button"
                     key={resolver.id}
+                    aria-busy={lookupQuery.isFetching && dnsResolver === resolver.id}
                     onClick={() => selectDNSResolver(resolver.id)}
                     title={resolver.detail}
                   >

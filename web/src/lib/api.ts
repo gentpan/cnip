@@ -137,7 +137,7 @@ export function dnsResolverLabel(value?: string | null) {
   return resolver?.label || DNS_RESOLVERS[0].label
 }
 
-export async function fetchLookup(query: string, resolver?: DNSResolverId): Promise<LookupEntry> {
+export async function fetchLookup(query: string, resolver?: DNSResolverId, signal?: AbortSignal): Promise<LookupEntry> {
   const normalized = query.trim()
   const params = new URLSearchParams({ q: normalized })
   if (resolver && resolver !== 'cloudflare') {
@@ -145,6 +145,7 @@ export async function fetchLookup(query: string, resolver?: DNSResolverId): Prom
   }
   const res = await fetch(`${API_BASE}/lookup?${params.toString()}`, {
     headers: { Accept: 'application/json' },
+    signal,
   })
   if (!res.ok) {
     throw new Error(`查询失败：${res.status}`)

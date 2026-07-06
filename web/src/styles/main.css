@@ -688,6 +688,16 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display:none; }
   background:#0052d9;
   color:#fff;
 }
+.cnp-dns-resolver-tab.loading {
+  cursor:wait;
+}
+.cnp-dns-resolver-tab.loading .cnp-dns-resolver-icon {
+  animation:cnp-dns-pulse .72s ease-in-out infinite alternate;
+}
+@keyframes cnp-dns-pulse {
+  from { opacity:.55; transform:scale(.94); }
+  to { opacity:1; transform:scale(1); }
+}
 .cnp-resolved-count { opacity:.6; font-size:.85rem; display:inline-flex; align-items:center; gap:6px; }
 .cnp-count-badge {
   display:inline-flex; align-items:center; justify-content:center;
