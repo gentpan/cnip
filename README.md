@@ -10,7 +10,7 @@
 
 `cnip` is the frontend and deployment workspace for [cnip.io](https://cnip.io), a lightweight IP and domain lookup experience with map-based location context, IPv4 / IPv6 support, domain DNS resolution results, and public API documentation.
 
-The current production frontend lives in `apps/cnip-start` and is built with TanStack Start, TanStack Router, TanStack Query, Vite, React, and TypeScript.
+The current production frontend lives in `apps/web` and is built with TanStack Start, TanStack Router, TanStack Query, Vite, React, and TypeScript.
 
 ## Features
 
@@ -45,18 +45,21 @@ The current production frontend lives in `apps/cnip-start` and is built with Tan
 ```text
 .
 ├── apps/
-│   └── cnip-start/       # Current TanStack Start production app
+│   └── web/              # Current TanStack Start production app
 ├── deploy/               # Deployment notes and service templates
-├── static-cnip/          # Static assets migrated from the previous site
-├── web-cnip/             # Legacy Nuxt implementation
-├── web-ip2region/        # Legacy ip2region frontend
-└── web/                  # Older shared frontend implementation
+├── legacy/
+│   ├── static-cnip/      # Static assets migrated from the previous site
+│   ├── web-cnip-nuxt/    # Legacy cnip.io Nuxt implementation
+│   ├── web-ip2region-nuxt/
+│   └── web-nuxt-shared/  # Older shared Nuxt implementation
+├── server/               # Lookup backend service
+└── ipapi/                # ipx.ee helper backend
 ```
 
 ## Local Development
 
 ```bash
-cd apps/cnip-start
+cd apps/web
 npm install
 npm run dev -- --host 127.0.0.1 --port 3010
 ```
@@ -66,16 +69,16 @@ Open `http://127.0.0.1:3010`.
 ## Build
 
 ```bash
-cd apps/cnip-start
+cd apps/web
 npm run build
 ```
 
-The production output is generated in `apps/cnip-start/dist`.
+The production output is generated in `apps/web/dist`.
 
 ## Production Start
 
 ```bash
-cd apps/cnip-start
+cd apps/web
 npm run start
 ```
 
@@ -83,7 +86,7 @@ The production service uses `server.mjs`, which serves the Vite client assets fi
 
 ## Environment
 
-`apps/cnip-start` defaults to safe runtime values:
+`apps/web` defaults to safe runtime values:
 
 | Variable | Purpose | Default |
 | --- | --- | --- |
@@ -103,7 +106,7 @@ Production secrets, private keys, database files, and server-only credentials sh
 Before deploying or pushing changes:
 
 ```bash
-cd apps/cnip-start
+cd apps/web
 npm exec tsc -- --noEmit
 npm run build
 ```

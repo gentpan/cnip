@@ -77,5 +77,5 @@ createServer(async (req, res) => {
     res.end('Internal Server Error')
   }
 }).listen(port, host, () => {
-  console.log(`cnip-start listening on http://${host}:${port}`)
+  console.log(`cnip-web listening on http://${host}:${port}`)
 })

@@ -1,6 +1,6 @@
-# cnip-start
+# cnip-web
 
-Current TanStack Start frontend for `cnip.io`.
+Current TanStack Start web app for `cnip.io`.
 
 ## Stack
 

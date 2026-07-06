@@ -1,32 +1,44 @@
 # Deployment Notes
 
-This repository now uses one unified backend for `cnip.io`, plus one separate backend for `ipx.ee`:
+This repository contains the current `cnip.io` TanStack Start web app plus backend services used by the broader IP lookup stack.
 
-- `server/`: unified `cnip.io` backend powered by local paid `ip2region` xdb files
-- `ipapi/`: `ipx.ee` backend powered by `ip-api` upstream requests
+## Current Layout
 
-Recommended runtime ports:
+- `apps/web/`: current TanStack Start frontend for `cnip.io`
+- `server/`: lookup backend powered by local `ip2region` xdb files
+- `ipapi/`: `ipx.ee` helper backend powered by upstream `ip-api` requests
+- `legacy/`: previous Nuxt/static frontend implementations kept for reference
 
-- `cnip.io`: `127.0.0.1:18083`
-- `ipx.ee`: `127.0.0.1:18084`
+## Recommended Runtime
 
-Recommended runtime layout on the server:
+Current production layout:
 
-- `/opt/ip2region.io`
-- `/opt/ipx.ee-ipapi`
+- Web app release root: `/opt/cnip-start/current`
+- Web app process: `cnip-start.service`
+- Web app bind address: `127.0.0.1:3011`
+- Lookup backend bind address: `127.0.0.1:18083`
+- Reverse proxy: Caddy
 
-Recommended domain topology:
+`cnip.io` and `www.cnip.io` are served by Caddy and proxied to the Node/TanStack Start app. API routes are proxied to the lookup backend.
 
-- `cnip.io` / `www.cnip.io`: main static site
-- `api.cnip.io`: unified API entry
-- `ip2region.io` / `www.ip2region.io`: `301` redirect to `https://cnip.io`
+## Web App Deploy
 
-Example assets in this folder:
+```bash
+cd /opt/cnip-start/current
+npm ci
+npm run build
+systemctl restart cnip-start
+systemctl is-active cnip-start
+```
 
-- `deploy/ip2region-backend.service`
-- `deploy/cnip.io.nginx.conf`
-- `deploy/api.cnip.io.nginx.conf`
-- `deploy/ip2region.io.nginx.conf`
-- `deploy/bootstrap-ip2region-db.sh`
-- `deploy/ipapi-backend.service`
-- `deploy/ipx.ee.nginx.conf`
+## Caddy Checks
+
+```bash
+caddy validate --config /etc/caddy/Caddyfile
+systemctl reload caddy
+systemctl is-active caddy
+```
+
+## Legacy Assets
+
+The old Nuxt/static frontends are no longer the primary app. They are kept under `legacy/` only for reference and migration history.
