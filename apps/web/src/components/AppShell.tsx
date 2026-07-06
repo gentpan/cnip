@@ -45,10 +45,7 @@ function detectQueryInputType(value: string): QueryInputType | null {
   if (!normalized) return null
 
   const ipv4Parts = normalized.split('.')
-  if (
-    ipv4Parts.length === 4 &&
-    ipv4Parts.every((part) => /^\d{1,3}$/.test(part) && Number(part) >= 0 && Number(part) <= 255)
-  ) {
+  if (ipv4Parts.length === 4 && ipv4Parts.every((part) => /^\d{1,3}$/.test(part))) {
     return 'ipv4'
   }
 
@@ -58,6 +55,7 @@ function detectQueryInputType(value: string): QueryInputType | null {
 
   if (
     normalized.includes('.') &&
+    /[a-z]/i.test(normalized) &&
     normalized.length <= 253 &&
     /^[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)+\.?$/i.test(normalized)
   ) {
