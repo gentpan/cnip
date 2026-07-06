@@ -2,6 +2,16 @@ export const API_BASE = import.meta.env.VITE_API_BASE || '/api'
 export const DOCS_BASE = import.meta.env.VITE_DOCS_BASE || 'https://api.cnip.io'
 export const DOCS_REQUEST_BASE = import.meta.env.VITE_DOCS_REQUEST_BASE || '/api'
 
+export const DNS_RESOLVERS = [
+  { id: 'system', label: '默认', detail: '服务器 DNS' },
+  { id: 'google', label: 'Google', detail: '8.8.8.8' },
+  { id: 'cloudflare', label: 'Cloudflare', detail: '1.1.1.1' },
+  { id: 'aliyun', label: '阿里', detail: '223.5.5.5' },
+  { id: 'tencent', label: '腾讯', detail: '119.29.29.29' },
+] as const
+
+export type DNSResolverId = typeof DNS_RESOLVERS[number]['id']
+
 export const MAP_STYLES = [
   { id: 'blue', label: 'CNIP 默认', url: '' },
   { id: 'road', label: 'Google 路网', url: import.meta.env.VITE_TILE_ROAD || 'https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&hl=zh-CN&scale=2' },
@@ -94,6 +104,8 @@ export type LookupResult = {
 export type LookupResponse = {
   query: string
   queryType: string
+  resolver?: DNSResolverId | string
+  resolverIp?: string
   resolvedIps?: string[]
   results: LookupResult[]
 }
@@ -115,9 +127,23 @@ export async function fetchCurrentIp() {
   }
 }
 
-export async function fetchLookup(query: string): Promise<LookupEntry> {
+export function normalizeDNSResolver(value?: string | null): DNSResolverId {
+  return DNS_RESOLVERS.some((resolver) => resolver.id === value) ? value as DNSResolverId : 'system'
+}
+
+export function dnsResolverLabel(value?: string | null) {
+  const normalized = normalizeDNSResolver(value)
+  const resolver = DNS_RESOLVERS.find((item) => item.id === normalized)
+  return resolver?.label || DNS_RESOLVERS[0].label
+}
+
+export async function fetchLookup(query: string, resolver?: DNSResolverId): Promise<LookupEntry> {
   const normalized = query.trim()
-  const res = await fetch(`${API_BASE}/lookup?q=${encodeURIComponent(normalized)}`, {
+  const params = new URLSearchParams({ q: normalized })
+  if (resolver && resolver !== 'system') {
+    params.set('resolver', resolver)
+  }
+  const res = await fetch(`${API_BASE}/lookup?${params.toString()}`, {
     headers: { Accept: 'application/json' },
   })
   if (!res.ok) {

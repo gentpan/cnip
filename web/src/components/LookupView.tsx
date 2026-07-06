@@ -10,8 +10,12 @@ import {
   iconUrl,
   isMapPolicyReady,
   isIPv6,
+  dnsResolverLabel,
+  normalizeDNSResolver,
   pad2,
   tileUrlForStyle,
+  DNS_RESOLVERS,
+  type DNSResolverId,
   type MapStyleId,
   type LookupEntry,
   type LookupResult,
@@ -41,6 +45,11 @@ const fields = [
   { key: 'timeZone', label: '时区', en: 'Timezone', icon: 'clock', desc: 'IANA 标准时区名，如 Asia/Shanghai' },
   { key: 'weatherStation', label: '气象站', en: 'Weather Stn', icon: 'sun-behind-cloud', desc: '最近的气象观测站编码' },
 ] as const
+
+function initialDNSResolver(): DNSResolverId {
+  if (typeof window === 'undefined') return 'system'
+  return normalizeDNSResolver(window.localStorage.getItem('cnip-dns-resolver'))
+}
 
 function regionCode(item: LookupResult) {
   const code = (item.countryChar || item.isoCode || '').toUpperCase()
@@ -193,6 +202,7 @@ export function LookupView({ search }: { search: LookupSearch }) {
   const [mapReady, setMapReady] = useState(false)
   const [pinPoint, setPinPoint] = useState<{ x: number, y: number } | null>(null)
   const [hasLoadedOnce, setHasLoadedOnce] = useState(false)
+  const [dnsResolver, setDnsResolver] = useState<DNSResolverId>(() => initialDNSResolver())
   const mapRef = useRef<any>(null)
   const tileRef = useRef<any>(null)
 
@@ -228,8 +238,8 @@ export function LookupView({ search }: { search: LookupSearch }) {
   }, [currentIpQuery.data, search.q])
 
   const lookupQuery = useQuery({
-    queryKey: ['lookup', selectedQuery],
-    queryFn: () => fetchLookup(selectedQuery),
+    queryKey: ['lookup', selectedQuery, dnsResolver],
+    queryFn: () => fetchLookup(selectedQuery, dnsResolver),
     enabled: Boolean(selectedQuery),
   })
 
@@ -254,9 +264,15 @@ export function LookupView({ search }: { search: LookupSearch }) {
       if (!ip) return
       const key = isIPv6(ip) ? 'v6' : 'v4'
       setSelfIps((prev) => ({ ...prev, [key]: ip }))
-      queryClient.prefetchQuery({ queryKey: ['lookup', ip], queryFn: () => fetchLookup(ip) })
+      queryClient.prefetchQuery({ queryKey: ['lookup', ip, 'system'], queryFn: () => fetchLookup(ip) })
     }).catch(() => {})
   }, [currentIpQuery.data, queryClient])
+
+  const selectDNSResolver = (resolver: DNSResolverId) => {
+    setDnsResolver(resolver)
+    window.localStorage.setItem('cnip-dns-resolver', resolver)
+    setFocusedIp('')
+  }
 
   const mapPoint = useMemo(() => {
     if (!primary) return null
@@ -421,11 +437,28 @@ export function LookupView({ search }: { search: LookupSearch }) {
       )}
       {data && (
         <section id="results" className="cnp-results-section">
-          {data.resolvedIps && data.resolvedIps.length > 1 && data.queryType === 'domain' && (
+          {data.resolvedIps && data.resolvedIps.length > 0 && data.queryType === 'domain' && (
             <div className="cnp-resolved-box">
               <div className="cnp-resolved-head">
-                <strong>域名解析 · {data.resolvedIps.length} 条记录</strong>
+                <div>
+                  <strong>域名解析 · {data.resolvedIps.length} 条记录</strong>
+                  <span className="cnp-dns-source">解析源：{dnsResolverLabel(data.resolver || dnsResolver)}{data.resolverIp ? ` · ${data.resolverIp}` : ''}</span>
+                </div>
                 <a className="cnp-powered-link" href={`https://dns.nf/lookup/${data.query}?type=ALL`} target="_blank" rel="noreferrer">Powered by <span className="cnp-dns-brand">dns.nf</span></a>
+              </div>
+              <div className="cnp-dns-resolver-tabs" aria-label="DNS 解析源">
+                {DNS_RESOLVERS.map((resolver) => (
+                  <button
+                    className={`cnp-dns-resolver-tab${dnsResolver === resolver.id ? ' active' : ''}`}
+                    type="button"
+                    key={resolver.id}
+                    onClick={() => selectDNSResolver(resolver.id)}
+                    title={resolver.detail}
+                  >
+                    <span>{resolver.label}</span>
+                    <small>{resolver.detail}</small>
+                  </button>
+                ))}
               </div>
               <div className="cnp-resolved-table">
                 <div className="cnp-resolved-row cnp-resolved-row-head"><span>#</span><span>IP 地址</span><span>类型</span></div>

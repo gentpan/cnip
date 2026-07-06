@@ -94,7 +94,7 @@ func (r *router) handleLookup(w http.ResponseWriter, req *http.Request) {
 	ctx, cancel := timeBoundContext(req, 5*time.Second)
 	defer cancel()
 
-	result, err := r.lookup.Lookup(ctx, query)
+	result, err := r.lookup.Lookup(ctx, query, req.URL.Query().Get("resolver"))
 	if err != nil {
 		writeJSON(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
 		return
@@ -133,7 +133,7 @@ func (r *router) handleGeoIP(w http.ResponseWriter, req *http.Request) {
 	ctx, cancel := timeBoundContext(req, 5*time.Second)
 	defer cancel()
 
-	result, err := r.lookup.Lookup(ctx, query)
+	result, err := r.lookup.Lookup(ctx, query, "")
 	if err != nil {
 		writeGeoResponse(w, req, http.StatusBadRequest, map[string]string{"error": err.Error()})
 		return

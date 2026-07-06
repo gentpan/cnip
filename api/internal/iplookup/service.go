@@ -12,6 +12,20 @@ import (
 	"ip2region.io/api/internal/model"
 )
 
+type DNSResolverInfo struct {
+	ID      string
+	Label   string
+	Address string
+}
+
+var dnsResolvers = map[string]DNSResolverInfo{
+	"system":     {ID: "system", Label: "服务器默认 DNS"},
+	"google":     {ID: "google", Label: "Google DNS", Address: "8.8.8.8:53"},
+	"cloudflare": {ID: "cloudflare", Label: "Cloudflare DNS", Address: "1.1.1.1:53"},
+	"aliyun":     {ID: "aliyun", Label: "阿里 DNS", Address: "223.5.5.5:53"},
+	"tencent":    {ID: "tencent", Label: "腾讯 DNS", Address: "119.29.29.29:53"},
+}
+
 type Service struct {
 	cfg      config.Config
 	provider *provider
@@ -29,22 +43,28 @@ func NewService(cfg config.Config) (*Service, error) {
 	}, nil
 }
 
-func (s *Service) Lookup(ctx context.Context, query string) (*model.LookupResponse, error) {
+func (s *Service) Lookup(ctx context.Context, query string, resolverID string) (*model.LookupResponse, error) {
 	query = strings.TrimSpace(query)
 	if query == "" {
 		return nil, fmt.Errorf("query is required")
 	}
 
+	resolver := normalizeResolver(resolverID)
+
 	response := &model.LookupResponse{
 		Query: query,
 	}
 
-	ips, queryType, err := s.resolveInput(ctx, query)
+	ips, queryType, err := s.resolveInput(ctx, query, resolver)
 	if err != nil {
 		return nil, err
 	}
 
 	response.QueryType = queryType
+	if queryType == "domain" {
+		response.Resolver = resolver.ID
+		response.ResolverIP = strings.TrimSuffix(resolver.Address, ":53")
+	}
 	response.ResolvedIPs = make([]string, 0, len(ips))
 	response.Results = make([]model.LookupResult, 0, len(ips))
 
@@ -127,12 +147,12 @@ func (s *Service) LatestDatabaseVersion() string {
 	return fmt.Sprintf("v%d", latestVersion)
 }
 
-func (s *Service) resolveInput(ctx context.Context, query string) ([]net.IP, string, error) {
+func (s *Service) resolveInput(ctx context.Context, query string, resolver DNSResolverInfo) ([]net.IP, string, error) {
 	if ip := net.ParseIP(query); ip != nil {
 		return []net.IP{ip}, classifyIP(ip), nil
 	}
 
-	records, err := net.DefaultResolver.LookupIP(ctx, "ip", query)
+	records, err := resolverClient(resolver).LookupIP(ctx, "ip", query)
 	if err != nil {
 		return nil, "", fmt.Errorf("resolve domain: %w", err)
 	}
@@ -142,6 +162,31 @@ func (s *Service) resolveInput(ctx context.Context, query string) ([]net.IP, str
 
 	unique := dedupeIPs(records)
 	return unique, "domain", nil
+}
+
+func normalizeResolver(value string) DNSResolverInfo {
+	id := strings.ToLower(strings.TrimSpace(value))
+	if id == "" {
+		id = "system"
+	}
+	resolver, ok := dnsResolvers[id]
+	if !ok {
+		return dnsResolvers["system"]
+	}
+	return resolver
+}
+
+func resolverClient(info DNSResolverInfo) *net.Resolver {
+	if info.Address == "" {
+		return net.DefaultResolver
+	}
+	dialer := &net.Dialer{}
+	return &net.Resolver{
+		PreferGo: true,
+		Dial: func(ctx context.Context, network, _ string) (net.Conn, error) {
+			return dialer.DialContext(ctx, network, info.Address)
+		},
+	}
 }
 
 func dedupeIPs(ips []net.IP) []net.IP {

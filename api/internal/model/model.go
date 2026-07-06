@@ -3,6 +3,8 @@ package model
 type LookupResponse struct {
 	Query       string         `json:"query"`
 	QueryType   string         `json:"queryType"`
+	Resolver    string         `json:"resolver,omitempty"`
+	ResolverIP  string         `json:"resolverIp,omitempty"`
 	ResolvedIPs []string       `json:"resolvedIps,omitempty"`
 	Results     []LookupResult `json:"results"`
 }
