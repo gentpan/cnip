@@ -2,6 +2,7 @@ import { useMutation } from '@tanstack/react-query'
 import { createFileRoute } from '@tanstack/react-router'
 import { type FormEvent, useMemo, useState } from 'react'
 import { DOCS_BASE, DOCS_REQUEST_BASE } from '@/lib/api'
+import { apiDocsJsonLd, canonicalLink, jsonLdScript, seoMeta } from '@/lib/seo'
 
 type EndpointParam = {
   name: string
@@ -90,6 +91,17 @@ const quickExamples = [
 ]
 
 export const Route = createFileRoute('/docs')({
+  head: () => ({
+    meta: seoMeta({
+      title: 'API 文档 - IP 归属地、IPv6 与域名解析查询接口',
+      description: 'cnip.io 免费公开 API 文档，提供当前公网 IP、指定 IPv4/IPv6、域名解析、多 IP 归属地、JSONP、v4/v6 出口检测等查询示例。',
+      path: '/docs',
+      keywords: ['IP查询API', 'GeoIP API', 'IPv6 API', '域名解析API', 'JSONP IP查询', '公网IP API'],
+      type: 'article',
+    }) as never,
+    links: [canonicalLink('/docs')],
+    scripts: [jsonLdScript(apiDocsJsonLd('/docs'))],
+  }),
   component: Docs,
 })
 

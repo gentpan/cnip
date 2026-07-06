@@ -1,6 +1,16 @@
 import { createFileRoute } from '@tanstack/react-router'
+import { canonicalLink, seoMeta } from '@/lib/seo'
 
 export const Route = createFileRoute('/about')({
+  head: () => ({
+    meta: seoMeta({
+      title: '关于 cnip.io - IP 查询、域名解析与地图定位工具',
+      description: '了解 cnip.io 的用途、数据来源、更新方式、公开 API 能力和 IP 归属地查询边界。适合开发调试、网络排障和轻量集成。',
+      path: '/about',
+      keywords: ['关于cnip', 'IP查询工具', 'IP归属地数据', 'ip2region', '网络排障工具'],
+    }) as never,
+    links: [canonicalLink('/about')],
+  }),
   component: About,
 })
 
