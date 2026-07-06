@@ -1,12 +1,19 @@
-# cnip
-
-![React](https://img.shields.io/badge/React-19-61DAFB?logo=react&logoColor=111)
-![TanStack Start](https://img.shields.io/badge/TanStack%20Start-1.167-FF4154?logo=reactrouter&logoColor=white)
-![TanStack Router](https://img.shields.io/badge/TanStack%20Router-1.167-FF4154)
-![TanStack Query](https://img.shields.io/badge/TanStack%20Query-5.101-FF4154)
-![Vite](https://img.shields.io/badge/Vite-7.3-646CFF?logo=vite&logoColor=white)
-![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?logo=typescript&logoColor=white)
-![Caddy](https://img.shields.io/badge/Caddy-Reverse%20Proxy-1F88C0)
+<div align="center">
+  <img src="apps/web/public/favicon.svg" width="92" height="92" alt="cnip logo" />
+  <h1>cnip</h1>
+  <p>IP, IPv6, domain DNS and map-based geolocation lookup for cnip.io.</p>
+  <p>
+    <img src="https://img.shields.io/badge/cnip-IP%20Geolocation-09090b?style=for-the-badge" alt="cnip IP Geolocation" />
+    <img src="https://img.shields.io/badge/TanStack%20Start-React-ff4154?style=for-the-badge&logo=react&logoColor=white" alt="TanStack Start" />
+    <img src="https://img.shields.io/badge/React-19-61dafb?style=for-the-badge&logo=react&logoColor=111111" alt="React 19" />
+    <img src="https://img.shields.io/badge/TypeScript-5.9-3178c6?style=for-the-badge&logo=typescript&logoColor=white" alt="TypeScript" />
+    <img src="https://img.shields.io/badge/Vite-7.3-646cff?style=for-the-badge&logo=vite&logoColor=white" alt="Vite" />
+    <img src="https://img.shields.io/badge/Caddy-Reverse%20Proxy-1f88c0?style=for-the-badge" alt="Caddy" />
+    <img src="https://img.shields.io/badge/ip2region-Paid%20Edition-10b981?style=for-the-badge" alt="ip2region paid edition" />
+    <img src="https://img.shields.io/badge/License-Proprietary-71717a?style=for-the-badge" alt="License: Proprietary" />
+  </p>
+  <p><strong>IP database source:</strong> ip2region paid edition.</p>
+</div>
 
 `cnip` is the frontend and deployment workspace for [cnip.io](https://cnip.io), a lightweight IP and domain lookup experience with map-based location context, IPv4 / IPv6 support, domain DNS resolution results, and public API documentation.
 
