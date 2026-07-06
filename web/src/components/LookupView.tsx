@@ -64,12 +64,7 @@ function DNSResolverIcon({ id }: { id: DNSResolverId }) {
     )
   }
   if (id === 'aliyun') {
-    return (
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path fill="#ff6a00" d="M4 7.2 8.2 4h7.6L20 7.2v9.6L15.8 20H8.2L4 16.8V7.2Z" />
-        <path fill="#fff" d="M7.4 8.5h9.2v2.2H7.4V8.5Zm0 4.8h9.2v2.2H7.4v-2.2Z" />
-      </svg>
-    )
+    return <img src="/icons/dns-aliyun.svg" alt="" aria-hidden="true" />
   }
   if (id === 'tencent') {
     return (
