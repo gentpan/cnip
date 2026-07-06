@@ -139,11 +139,13 @@ The current production deployment uses:
 Typical server workflow:
 
 ```bash
-cd /opt/cnip-start/current
+cd /opt/cnip/web/current
 npm ci
 npm run build
-systemctl restart cnip-start
-systemctl is-active cnip-start
+systemctl restart cnip-web
+systemctl is-active cnip-web
+systemctl restart cnip-api
+systemctl is-active cnip-api
 caddy validate --config /etc/caddy/Caddyfile
 ```
 
@@ -275,11 +277,13 @@ npm run build
 常用服务器流程：
 
 ```bash
-cd /opt/cnip-start/current
+cd /opt/cnip/web/current
 npm ci
 npm run build
-systemctl restart cnip-start
-systemctl is-active cnip-start
+systemctl restart cnip-web
+systemctl is-active cnip-web
+systemctl restart cnip-api
+systemctl is-active cnip-api
 caddy validate --config /etc/caddy/Caddyfile
 ```
 

@@ -13,8 +13,10 @@ This repository contains the current `cnip.io` TanStack Start web app plus the l
 
 Current production layout:
 
-- Web app release root: `/opt/cnip-start/current`
-- Web app process: `cnip-start.service`
+- Web app process: `cnip-web.service`
+- Web app release root: `/opt/cnip/web/current`
+- API backend root: `/opt/cnip/api`
+- API backend process: `cnip-api.service`
 - Web app bind address: `127.0.0.1:3011`
 - Lookup backend bind address: `127.0.0.1:18083`
 - Reverse proxy: Caddy
@@ -24,11 +26,13 @@ Current production layout:
 ## Web App Deploy
 
 ```bash
-cd /opt/cnip-start/current
+cd /opt/cnip/web/current
 npm ci
 npm run build
-systemctl restart cnip-start
-systemctl is-active cnip-start
+systemctl restart cnip-web
+systemctl is-active cnip-web
+systemctl restart cnip-api
+systemctl is-active cnip-api
 ```
 
 ## Caddy Checks

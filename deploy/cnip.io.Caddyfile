@@ -6,7 +6,6 @@
 
 cnip.io, www.cnip.io {
 	encode zstd gzip
-	root * /var/www/cnip.io
 	header Cache-Control "no-store"
 
 	@apiIp path /api /api/
@@ -28,8 +27,7 @@ cnip.io, www.cnip.io {
 	}
 
 	handle {
-		try_files {path} /index.html
-		file_server
+		reverse_proxy 127.0.0.1:3011
 	}
 }
 

@@ -1,0 +1,19 @@
+[Unit]
+Description=cnip.io web frontend (127.0.0.1:3011)
+After=network.target cnip-api.service
+Wants=cnip-api.service
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/cnip/web/current
+Environment=NODE_ENV=production
+Environment=HOST=127.0.0.1
+Environment=PORT=3011
+Environment=PATH=/opt/node-current/bin:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+ExecStart=/usr/bin/env npm run start
+Restart=always
+RestartSec=5
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target
