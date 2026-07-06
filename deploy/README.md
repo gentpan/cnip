@@ -1,13 +1,13 @@
 # Deployment Notes
 
-This repository contains the current `cnip.io` TanStack Start web app plus backend services used by the broader IP lookup stack.
+This repository contains the current `cnip.io` TanStack Start web app plus the lookup backend used by the IP lookup stack.
 
 ## Current Layout
 
 - `apps/web/`: current TanStack Start frontend for `cnip.io`
 - `server/`: lookup backend powered by local `ip2region` xdb files
-- `ipapi/`: `ipx.ee` helper backend powered by upstream `ip-api` requests
-- `legacy/`: previous Nuxt/static frontend implementations kept for reference
+- `deploy/`: production proxy and service templates
+- `data/`: local database placeholders and runtime data
 
 ## Recommended Runtime
 
@@ -38,7 +38,3 @@ caddy validate --config /etc/caddy/Caddyfile
 systemctl reload caddy
 systemctl is-active caddy
 ```
-
-## Legacy Assets
-
-The old Nuxt/static frontends are no longer the primary app. They are kept under `legacy/` only for reference and migration history.

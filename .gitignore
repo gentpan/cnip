@@ -14,7 +14,4 @@ server/.cache
 data/*.xdb
 data/*.tmp.xdb
 !.gitkeep
-legacy/*/node_modules/
-legacy/*/.nuxt/
-legacy/*/.output/
-legacy/*/dist
+.claude/

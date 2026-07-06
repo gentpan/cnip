@@ -58,13 +58,8 @@ The current production frontend lives in `apps/web` and is built with TanStack S
 ├── apps/
 │   └── web/              # Current TanStack Start production app
 ├── deploy/               # Deployment notes and service templates
-├── legacy/
-│   ├── static-cnip/      # Static assets migrated from the previous site
-│   ├── web-cnip-nuxt/    # Legacy cnip.io Nuxt implementation
-│   ├── web-ip2region-nuxt/
-│   └── web-nuxt-shared/  # Older shared Nuxt implementation
-├── server/               # Lookup backend service
-└── ipapi/                # ipx.ee helper backend
+├── data/                 # Local database placeholders and runtime data
+└── server/               # Lookup backend service
 ```
 
 ### Local Development
@@ -200,13 +195,8 @@ Private project. All rights reserved.
 ├── apps/
 │   └── web/              # 当前 TanStack Start 生产前端
 ├── deploy/               # 部署说明和服务模板
-├── legacy/
-│   ├── static-cnip/      # 旧静态站点迁移资源
-│   ├── web-cnip-nuxt/    # 旧 cnip.io Nuxt 实现
-│   ├── web-ip2region-nuxt/
-│   └── web-nuxt-shared/  # 更早的共享 Nuxt 实现
-├── server/               # 查询后端服务
-└── ipapi/                # ipx.ee 辅助后端
+├── data/                 # 本地数据库占位和运行数据
+└── server/               # 查询后端服务
 ```
 
 ### 本地开发
