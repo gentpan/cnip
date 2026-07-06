@@ -626,10 +626,10 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display:none; }
 .cnp-dns-resolver-tab {
   all:unset;
   display:flex;
-  flex-direction:column;
-  justify-content:center;
+  align-items:center;
+  gap:8px;
   min-width:0;
-  min-height:40px;
+  min-height:46px;
   padding:7px 8px;
   box-sizing:border-box;
   border:1px solid rgba(255,255,255,.08);
@@ -639,18 +639,38 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display:none; }
   cursor:pointer;
   transition:background .14s ease, border-color .14s ease, color .14s ease, transform .14s ease;
 }
-.cnp-dns-resolver-tab span,
-.cnp-dns-resolver-tab small {
+.cnp-dns-resolver-icon {
+  width:24px;
+  height:24px;
+  flex:0 0 24px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  color:#0052d9;
+}
+.cnp-dns-resolver-icon svg {
+  width:24px;
+  height:24px;
+  display:block;
+}
+.cnp-dns-resolver-copy {
+  min-width:0;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+}
+.cnp-dns-resolver-copy span,
+.cnp-dns-resolver-copy small {
   overflow:hidden;
   text-overflow:ellipsis;
   white-space:nowrap;
 }
-.cnp-dns-resolver-tab span {
+.cnp-dns-resolver-copy span {
   font-size:.74rem;
   font-weight:800;
   line-height:1.1;
 }
-.cnp-dns-resolver-tab small {
+.cnp-dns-resolver-copy small {
   margin-top:3px;
   color:inherit;
   font-size:.62rem;

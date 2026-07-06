@@ -167,11 +167,11 @@ func (s *Service) resolveInput(ctx context.Context, query string, resolver DNSRe
 func normalizeResolver(value string) DNSResolverInfo {
 	id := strings.ToLower(strings.TrimSpace(value))
 	if id == "" {
-		id = "system"
+		id = "cloudflare"
 	}
 	resolver, ok := dnsResolvers[id]
 	if !ok {
-		return dnsResolvers["system"]
+		return dnsResolvers["cloudflare"]
 	}
 	return resolver
 }

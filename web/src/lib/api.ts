@@ -128,7 +128,7 @@ export async function fetchCurrentIp() {
 }
 
 export function normalizeDNSResolver(value?: string | null): DNSResolverId {
-  return DNS_RESOLVERS.some((resolver) => resolver.id === value) ? value as DNSResolverId : 'system'
+  return DNS_RESOLVERS.some((resolver) => resolver.id === value) ? value as DNSResolverId : 'cloudflare'
 }
 
 export function dnsResolverLabel(value?: string | null) {
@@ -140,7 +140,7 @@ export function dnsResolverLabel(value?: string | null) {
 export async function fetchLookup(query: string, resolver?: DNSResolverId): Promise<LookupEntry> {
   const normalized = query.trim()
   const params = new URLSearchParams({ q: normalized })
-  if (resolver && resolver !== 'system') {
+  if (resolver && resolver !== 'cloudflare') {
     params.set('resolver', resolver)
   }
   const res = await fetch(`${API_BASE}/lookup?${params.toString()}`, {

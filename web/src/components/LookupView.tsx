@@ -47,8 +47,50 @@ const fields = [
 ] as const
 
 function initialDNSResolver(): DNSResolverId {
-  if (typeof window === 'undefined') return 'system'
+  if (typeof window === 'undefined') return 'cloudflare'
   return normalizeDNSResolver(window.localStorage.getItem('cnip-dns-resolver'))
+}
+
+function DNSResolverIcon({ id }: { id: DNSResolverId }) {
+  if (id === 'google') {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path fill="#4285f4" d="M21.6 12.23c0-.74-.07-1.46-.19-2.14H12v4.05h5.38a4.6 4.6 0 0 1-2 3.02v2.62h3.24c1.9-1.75 2.98-4.32 2.98-7.55Z" />
+        <path fill="#34a853" d="M12 22c2.7 0 4.97-.9 6.62-2.42l-3.24-2.62c-.9.6-2.05.96-3.38.96-2.6 0-4.8-1.76-5.59-4.12H3.06v2.7A10 10 0 0 0 12 22Z" />
+        <path fill="#fbbc05" d="M6.41 13.8A6 6 0 0 1 6.1 12c0-.62.11-1.23.31-1.8V7.5H3.06a10 10 0 0 0 0 9l3.35-2.7Z" />
+        <path fill="#ea4335" d="M12 6.08c1.47 0 2.79.5 3.82 1.49l2.87-2.87C16.96 3.02 14.69 2 12 2a10 10 0 0 0-8.94 5.5l3.35 2.7C7.2 7.84 9.4 6.08 12 6.08Z" />
+      </svg>
+    )
+  }
+  if (id === 'cloudflare') {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path fill="#f48120" d="M15.4 8.8a4.5 4.5 0 0 0-8.46 1.62 3.77 3.77 0 0 0-3.44 3.75c0 .27.03.54.09.8h13.15a2.98 2.98 0 0 0-1.34-6.17Z" />
+        <path fill="#faae40" d="M17.42 10.85h-.34a4.9 4.9 0 0 1 .15 1.2 4.77 4.77 0 0 1-4.77 4.77H5.04A4.85 4.85 0 0 0 8.42 18h8.99a3.58 3.58 0 1 0 0-7.15Z" />
+      </svg>
+    )
+  }
+  if (id === 'aliyun') {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path fill="#ff6a00" d="M4 7.2 8.2 4h7.6L20 7.2v9.6L15.8 20H8.2L4 16.8V7.2Z" />
+        <path fill="#fff" d="M7.4 8.5h9.2v2.2H7.4V8.5Zm0 4.8h9.2v2.2H7.4v-2.2Z" />
+      </svg>
+    )
+  }
+  if (id === 'tencent') {
+    return (
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path fill="#0052d9" d="M12 2 21 7v10l-9 5-9-5V7l9-5Z" />
+        <path fill="#fff" d="M7.2 7.8h9.6v2.4h-3.45v6h-2.7v-6H7.2V7.8Z" />
+      </svg>
+    )
+  }
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path fill="currentColor" d="M5 5.5A2.5 2.5 0 0 1 7.5 3h9A2.5 2.5 0 0 1 19 5.5v13A2.5 2.5 0 0 1 16.5 21h-9A2.5 2.5 0 0 1 5 18.5v-13Zm3 1v11h8v-11H8Zm1.5 1.8h5v1.4h-5V8.3Zm0 3h5v1.4h-5v-1.4Zm0 3h3.2v1.4H9.5v-1.4Z" />
+    </svg>
+  )
 }
 
 function regionCode(item: LookupResult) {
@@ -455,8 +497,13 @@ export function LookupView({ search }: { search: LookupSearch }) {
                     onClick={() => selectDNSResolver(resolver.id)}
                     title={resolver.detail}
                   >
-                    <span>{resolver.label}</span>
-                    <small>{resolver.detail}</small>
+                    <span className="cnp-dns-resolver-icon" data-resolver={resolver.id}>
+                      <DNSResolverIcon id={resolver.id} />
+                    </span>
+                    <span className="cnp-dns-resolver-copy">
+                      <span>{resolver.label}</span>
+                      <small>{resolver.detail}</small>
+                    </span>
                   </button>
                 ))}
               </div>
