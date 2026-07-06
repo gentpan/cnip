@@ -296,14 +296,15 @@ html::-webkit-scrollbar, body::-webkit-scrollbar { display:none; }
   min-width:42px;
   height:20px;
   padding:0 8px;
-  border-radius:999px;
+  border:1px solid rgba(255,255,255,.18);
+  border-radius:0;
   color:#fff;
   font-size:.68rem;
   font-weight:800;
   line-height:1;
   letter-spacing:0;
   pointer-events:none;
-  box-shadow:0 6px 14px rgba(0,0,0,.14);
+  box-shadow:0 3px 8px rgba(0,0,0,.1);
 }
 .cnp-nav-query-type-ipv4 { background:#0052d9; }
 .cnp-nav-query-type-ipv6 { background:#19bf5b; }
