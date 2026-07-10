@@ -12,6 +12,7 @@ import (
 	"ip2region.io/api/internal/config"
 	"ip2region.io/api/internal/httpapi"
 	"ip2region.io/api/internal/iplookup"
+	"ip2region.io/api/internal/metrics"
 	"ip2region.io/api/internal/updater"
 )
 
@@ -25,6 +26,12 @@ func main() {
 	}
 	defer lookupService.Close()
 
+	metricsStore, err := metrics.New(cfg.MetricsPath, cfg.MetricsFlushInterval)
+	if err != nil {
+		log.Fatalf("init metrics store: %v", err)
+	}
+	defer metricsStore.Close()
+
 	updateManager := updater.NewManager(cfg, lookupService)
 	ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
 	defer stop()
@@ -32,10 +39,11 @@ func main() {
 	if cfg.UpdateEnabled {
 		go updateManager.Run(ctx)
 	}
+	go metricsStore.Run(ctx)
 
 	server := &http.Server{
 		Addr:              cfg.ListenAddr(),
-		Handler:           httpapi.NewRouter(cfg, lookupService, updateManager),
+		Handler:           httpapi.NewRouter(cfg, lookupService, updateManager, metricsStore),
 		ReadHeaderTimeout: 5 * time.Second,
 	}
 

@@ -70,7 +70,7 @@ function DNSResolverIcon({ id }: { id: DNSResolverId }) {
 }
 
 function regionCode(item: LookupResult) {
-  const code = (item.countryChar || item.isoCode || '').toUpperCase()
+  const code = (item.countryChar || item.isoCode || item.countryCode || '').toUpperCase()
   if (code === 'CN') {
     const province = (item.province || '').toLowerCase()
     if (province === '香港' || province === 'hong kong') return 'HK'
@@ -145,11 +145,29 @@ function pinAnchor() {
   }
 }
 
-function alignMapToPoint(map: any, point: { lat: number, lon: number }) {
+function alignMapToPoint(map: any, point: { lat: number, lon: number }, animate = false) {
   const latLng: [number, number] = [point.lat, point.lon]
   const containerPoint = map.latLngToContainerPoint(latLng)
   const anchor = pinAnchor()
-  map.panBy([containerPoint.x - anchor.x, containerPoint.y - anchor.y], { animate: false })
+  map.panBy([containerPoint.x - anchor.x, containerPoint.y - anchor.y], {
+    animate,
+    duration: animate ? .32 : undefined,
+    easeLinearity: .35,
+  })
+}
+
+function moveMapToPoint(map: any, point: { lat: number, lon: number }, options: { animate: boolean }) {
+  const latLng: [number, number] = [point.lat, point.lon]
+  if (options.animate && typeof map.flyTo === 'function') {
+    map.flyTo(latLng, 10, {
+      animate: true,
+      duration: 1.05,
+      easeLinearity: 0.22,
+      noMoveStart: false,
+    })
+    return
+  }
+  map.setView(latLng, 10, { animate: options.animate })
 }
 
 function applyMapControl(map: any, action: MapControlAction, point?: { lat: number, lon: number } | null) {
@@ -223,6 +241,7 @@ export function LookupView({ search }: { search: LookupSearch }) {
   const [dnsResolver, setDnsResolver] = useState<DNSResolverId>(() => initialDNSResolver())
   const mapRef = useRef<any>(null)
   const tileRef = useRef<any>(null)
+  const lastMapPointRef = useRef<{ lat: number, lon: number } | null>(null)
 
   useEffect(() => {
     return () => {
@@ -371,10 +390,6 @@ export function LookupView({ search }: { search: LookupSearch }) {
   useEffect(() => {
     const map = mapRef.current
     if (!mapPoint) {
-      if (map && tileRef.current) {
-        map.removeLayer(tileRef.current)
-        tileRef.current = null
-      }
       setMapReady(false)
       setPinPoint(null)
       return
@@ -386,25 +401,38 @@ export function LookupView({ search }: { search: LookupSearch }) {
         keepBuffer: 3,
         maxZoom: 19,
       }).addTo(map)
-      setMapReady(true)
     }
+    setMapReady(true)
     const latLng: [number, number] = [mapPoint.lat, mapPoint.lon]
     const syncPin = () => {
       const point = map.latLngToContainerPoint(latLng)
       setPinPoint({ x: point.x, y: point.y })
     }
-    const alignPin = () => {
-      alignMapToPoint(map, mapPoint)
+    const alignPin = (animate = false) => {
+      alignMapToPoint(map, mapPoint, animate)
       syncPin()
     }
-    map.setView(latLng, 10, { animate: false })
-    alignPin()
+    const onResize = () => alignPin()
+    const previous = lastMapPointRef.current
+    const isSamePoint = previous && Math.abs(previous.lat - mapPoint.lat) < 0.000001 && Math.abs(previous.lon - mapPoint.lon) < 0.000001
+    const shouldAnimate = Boolean(previous && !isSamePoint)
+    lastMapPointRef.current = mapPoint
+    const timers: number[] = []
+
+    moveMapToPoint(map, mapPoint, { animate: shouldAnimate })
+    if (!shouldAnimate) {
+      alignPin()
+    } else {
+      timers.push(window.setTimeout(() => alignPin(true), 820))
+      timers.push(window.setTimeout(() => alignPin(), 1220))
+    }
     syncPin()
     map.on('move zoom moveend zoomend resize', syncPin)
-    window.addEventListener('resize', alignPin)
+    window.addEventListener('resize', onResize)
     return () => {
+      timers.forEach((timer) => window.clearTimeout(timer))
       map.off('move zoom moveend zoomend resize', syncPin)
-      window.removeEventListener('resize', alignPin)
+      window.removeEventListener('resize', onResize)
     }
   }, [mapPoint, mapReady])
 
@@ -515,7 +543,7 @@ export function LookupView({ search }: { search: LookupSearch }) {
                 </div>
                 <div className="cnp-result-table">
                   {visibleFields(item).map((field) => {
-                    const flag = field.key === 'country' ? flagUrl(regionCode(item)) : ''
+                    const flag = field.key === 'country' ? (item.flag || flagUrl(regionCode(item))) : ''
                     const tip = field.key === 'timeZone' ? (formatTimezoneLocal(item.timeZone) || field.desc) : field.desc
                     return (
                       <div className="cnp-result-row cnp-result-row-icon" key={field.key}>
@@ -525,7 +553,7 @@ export function LookupView({ search }: { search: LookupSearch }) {
                           </span>
                           <span className="cnp-result-label">{field.label}<span className="cnp-result-label-en">{field.en}</span></span>
                         </div>
-                        <span className="cnp-result-value">{valueOf(item, field.key)}</span>
+                        <span className={`cnp-result-value cnp-result-value-${field.key}`}>{valueOf(item, field.key)}</span>
                         <span className="cnp-result-info" data-tip={tip}>?</span>
                       </div>
                     )

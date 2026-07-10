@@ -84,6 +84,8 @@ export type LookupResult = {
   family: string
   continent?: string
   country?: string
+  countryCode?: string
+  flag?: string
   province?: string
   city?: string
   district?: string
@@ -114,6 +116,23 @@ export type LookupEntry = {
   response: LookupResponse
   dbUpdatedAt: string
   dbVersion: string
+}
+
+export type RequestStatsBucket = {
+  start: string
+  label: string
+  count: number
+}
+
+export type RequestStatsWindow = 'last_24h' | 'last_7d' | 'last_30d' | 'all'
+
+export type RequestStats = {
+  generated_at: string
+  last_24h: number
+  last_7d: number
+  last_30d: number
+  all: number
+  series: Record<RequestStatsWindow, RequestStatsBucket[]>
 }
 
 export async function fetchCurrentIp() {
@@ -157,6 +176,19 @@ export async function fetchLookup(query: string, resolver?: DNSResolverId, signa
   }
 }
 
+export async function fetchRequestStats(signal?: AbortSignal): Promise<RequestStats> {
+  const res = await fetch(`${API_BASE}/stats`, {
+    headers: { Accept: 'application/json' },
+    signal,
+  })
+  if (!res.ok) {
+    throw new Error(`统计请求失败：${res.status}`)
+  }
+  const body = await res.json() as { requests?: RequestStats }
+  if (!body.requests) throw new Error('统计数据为空')
+  return body.requests
+}
+
 export async function fetchText(url: string) {
   const res = await fetch(url, { cache: 'no-store' })
   if (!res.ok) throw new Error(`请求失败：${res.status}`)
@@ -174,7 +206,7 @@ export function iconUrl(name: string) {
 export function flagUrl(code?: string) {
   const normalized = (code || '').toLowerCase()
   if (!normalized || normalized === '-') return ''
-  return `https://flagcdn.io/flags/4x3/${normalized}.svg`
+  return `https://flagcdn.io/${normalized}.svg`
 }
 
 export function pad2(n: number) {

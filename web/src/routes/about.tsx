@@ -1,4 +1,6 @@
+import { useEffect, useMemo, useState } from 'react'
 import { createFileRoute } from '@tanstack/react-router'
+import { fetchRequestStats, type RequestStats, type RequestStatsWindow } from '@/lib/api'
 import { canonicalLink, seoMeta } from '@/lib/seo'
 
 export const Route = createFileRoute('/about')({
@@ -62,6 +64,7 @@ function About() {
             </div>
           ))}
         </div>
+        <RequestStatsChart />
         <div className="cnp-about-contact">
           <p>建议、合作或数据反馈</p>
           <a href="mailto:info@cnip.io" className="cnp-about-email" title="点击发送邮件">info#cnip.io</a>
@@ -69,4 +72,86 @@ function About() {
       </div>
     </section>
   )
+}
+
+const statsWindows: Array<{ id: RequestStatsWindow, label: string, totalKey: keyof Pick<RequestStats, 'last_24h' | 'last_7d' | 'last_30d' | 'all'> }> = [
+  { id: 'last_24h', label: '24 小时', totalKey: 'last_24h' },
+  { id: 'last_7d', label: '7 天', totalKey: 'last_7d' },
+  { id: 'last_30d', label: '30 天', totalKey: 'last_30d' },
+  { id: 'all', label: '全部', totalKey: 'all' },
+]
+
+function RequestStatsChart() {
+  const [activeWindow, setActiveWindow] = useState<RequestStatsWindow>('last_24h')
+  const [stats, setStats] = useState<RequestStats | null>(null)
+  const [error, setError] = useState('')
+
+  useEffect(() => {
+    const controller = new AbortController()
+    fetchRequestStats(controller.signal)
+      .then((data) => {
+        setStats(data)
+        setError('')
+      })
+      .catch((err: Error) => {
+        if (controller.signal.aborted) return
+        setError(err.message || '统计加载失败')
+      })
+    return () => controller.abort()
+  }, [])
+
+  const active = statsWindows.find((item) => item.id === activeWindow) || statsWindows[0]
+  const buckets = stats?.series?.[activeWindow] || []
+  const max = useMemo(() => Math.max(1, ...buckets.map((bucket) => bucket.count)), [buckets])
+  const total = stats ? stats[active.totalKey] : 0
+
+  return (
+    <div className="cnp-about-stats">
+      <div className="cnp-about-stats-head">
+        <div>
+          <h3>请求统计</h3>
+          <strong>{formatStatsNumber(total)}</strong>
+        </div>
+        <div className="cnp-about-stats-tabs" role="tablist" aria-label="请求统计时间范围">
+          {statsWindows.map((item) => (
+            <button
+              className={`cnp-about-stats-tab${activeWindow === item.id ? ' active' : ''}`}
+              key={item.id}
+              type="button"
+              role="tab"
+              aria-selected={activeWindow === item.id}
+              onClick={() => setActiveWindow(item.id)}
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
+      </div>
+      <div className="cnp-about-chart" aria-label={`${active.label}请求柱形图`}>
+        {buckets.length > 0 ? buckets.map((bucket, index) => (
+          <div className="cnp-about-chart-bar-wrap" key={`${bucket.start}-${index}`}>
+            <span
+              className="cnp-about-chart-bar"
+              style={{ height: `${Math.max(6, Math.round((bucket.count / max) * 100))}%` }}
+              title={`${bucket.label}: ${formatStatsNumber(bucket.count)}`}
+            />
+            <small>{pickBarLabel(bucket.label, index, buckets.length)}</small>
+          </div>
+        )) : (
+          <div className="cnp-about-chart-empty">{error || '暂无统计数据'}</div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function formatStatsNumber(value: number) {
+  return new Intl.NumberFormat('zh-CN').format(value || 0)
+}
+
+function pickBarLabel(label: string, index: number, total: number) {
+  if (label === '更早') return label
+  if (total <= 12) return label
+  if (index === 0 || index === total - 1 || index % Math.ceil(total / 6) === 0) return label
+  return ''
 }

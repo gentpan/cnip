@@ -11,44 +11,51 @@ import (
 
 	"ip2region.io/api/internal/config"
 	"ip2region.io/api/internal/iplookup"
+	"ip2region.io/api/internal/metrics"
 	"ip2region.io/api/internal/model"
+	"ip2region.io/api/internal/sslcheck"
 	"ip2region.io/api/internal/updater"
 )
 
 var jsonpCallbackPattern = regexp.MustCompile(`^[A-Za-z_$][A-Za-z0-9_$\.]*$`)
 
 type router struct {
-	cfg     config.Config
-	lookup  *iplookup.Service
-	updater *updater.Manager
+	cfg      config.Config
+	lookup   *iplookup.Service
+	metrics  *metrics.Store
+	sslCheck sslcheck.Service
+	updater  *updater.Manager
 }
 
 type geoIPResponse struct {
 	IP          string `json:"ip"`
-	Continent   string `json:"continent"`
-	CountryCode string `json:"country_code"`
-	Country     string `json:"country"`
-	Region      string `json:"region"`
-	Province    string `json:"province"`
-	City        string `json:"city"`
-	District    string `json:"district"`
-	PostalCode  string `json:"postal_code"`
-	ZipCode     string `json:"zip_code"`
-	Latitude    string `json:"latitude"`
-	Longitude   string `json:"longitude"`
-	TimeZone    string `json:"timezone"`
-	ASN         string `json:"asn"`
-	ISP         string `json:"isp"`
-	AreaCode    string `json:"area_code"`
-	PhoneCode   string `json:"phone_code"`
-	Currency    string `json:"currency"`
+	ASN         string `json:"asn,omitempty"`
+	ISP         string `json:"isp,omitempty"`
+	Continent   string `json:"continent,omitempty"`
+	CountryCode string `json:"country_code,omitempty"`
+	Country     string `json:"country,omitempty"`
+	Region      string `json:"region,omitempty"`
+	Province    string `json:"province,omitempty"`
+	City        string `json:"city,omitempty"`
+	District    string `json:"district,omitempty"`
+	AreaCode    string `json:"area_code,omitempty"`
+	PhoneCode   string `json:"phone_code,omitempty"`
+	PostalCode  string `json:"postal_code,omitempty"`
+	ZipCode     string `json:"zip_code,omitempty"`
+	Latitude    string `json:"latitude,omitempty"`
+	Longitude   string `json:"longitude,omitempty"`
+	TimeZone    string `json:"timezone,omitempty"`
+	Currency    string `json:"currency,omitempty"`
+	Flag        string `json:"flag,omitempty"`
 }
 
-func NewRouter(cfg config.Config, lookup *iplookup.Service, updater *updater.Manager) http.Handler {
+func NewRouter(cfg config.Config, lookup *iplookup.Service, updater *updater.Manager, metricsStore *metrics.Store) http.Handler {
 	r := &router{
-		cfg:     cfg,
-		lookup:  lookup,
-		updater: updater,
+		cfg:      cfg,
+		lookup:   lookup,
+		metrics:  metricsStore,
+		sslCheck: sslcheck.New(cfg.SSLCheckTimeout),
+		updater:  updater,
 	}
 
 	mux := http.NewServeMux()
@@ -57,8 +64,73 @@ func NewRouter(cfg config.Config, lookup *iplookup.Service, updater *updater.Man
 	mux.HandleFunc("/lookup", r.handleLookup)
 	mux.HandleFunc("/geoip", r.handleGeoIP)
 	mux.HandleFunc("/geoip/", r.handleGeoIP)
+	mux.HandleFunc("/ssl", r.handleSSL)
+	mux.HandleFunc("/ssl/", r.handleSSL)
+	mux.HandleFunc("/metrics", r.handleMetrics)
+	mux.HandleFunc("/stats", r.handleStats)
 
-	return r.withCORS(r.withLogging(mux))
+	return r.withCORS(r.withMetrics(r.withLogging(mux)))
+}
+
+func (r *router) handleStats(w http.ResponseWriter, req *http.Request) {
+	if req.Method != http.MethodGet {
+		writeJSON(w, http.StatusMethodNotAllowed, map[string]string{"error": "method not allowed"})
+		return
+	}
+	if r.metrics == nil {
+		writeJSON(w, http.StatusServiceUnavailable, map[string]string{"error": "stats unavailable"})
+		return
+	}
+
+	writeJSON(w, http.StatusOK, map[string]any{
+		"requests": r.metrics.Snapshot(),
+	})
+}
+
+func (r *router) handleMetrics(w http.ResponseWriter, req *http.Request) {
+	if req.Method != http.MethodGet {
+		writeJSON(w, http.StatusMethodNotAllowed, map[string]string{"error": "method not allowed"})
+		return
+	}
+	if !r.isAuthorized(req) {
+		writeJSON(w, http.StatusUnauthorized, map[string]string{"error": "unauthorized"})
+		return
+	}
+	if r.metrics == nil {
+		writeJSON(w, http.StatusServiceUnavailable, map[string]string{"error": "metrics unavailable"})
+		return
+	}
+
+	writeJSON(w, http.StatusOK, map[string]any{
+		"requests": r.metrics.Snapshot(),
+	})
+}
+
+func (r *router) handleSSL(w http.ResponseWriter, req *http.Request) {
+	if req.Method != http.MethodGet {
+		writeJSON(w, http.StatusMethodNotAllowed, map[string]string{"error": "method not allowed"})
+		return
+	}
+
+	host := ""
+	if strings.HasPrefix(req.URL.Path, "/ssl/") {
+		host = strings.TrimSpace(strings.TrimPrefix(req.URL.Path, "/ssl/"))
+	}
+	if host == "" {
+		writeJSON(w, http.StatusBadRequest, map[string]string{"error": "host is required"})
+		return
+	}
+
+	ctx, cancel := timeBoundContext(req, r.cfg.SSLCheckTimeout)
+	defer cancel()
+
+	result, err := r.sslCheck.Check(ctx, host)
+	if err != nil {
+		writeJSON(w, http.StatusBadRequest, map[string]string{"error": err.Error()})
+		return
+	}
+
+	writeJSON(w, http.StatusOK, result)
 }
 
 func (r *router) handleHealth(w http.ResponseWriter, _ *http.Request) {
@@ -153,9 +225,15 @@ func flattenGeoIPResult(result model.LookupResult) geoIPResponse {
 	if countryCode == "" {
 		countryCode = result.ISOCode
 	}
+	flag := ""
+	if countryCode != "" {
+		flag = "https://flagcdn.io/" + strings.ToLower(countryCode) + ".svg"
+	}
 
 	return geoIPResponse{
 		IP:          result.IP,
+		ASN:         result.ASN,
+		ISP:         result.ISP,
 		Continent:   result.Continent,
 		CountryCode: countryCode,
 		Country:     result.Country,
@@ -163,16 +241,15 @@ func flattenGeoIPResult(result model.LookupResult) geoIPResponse {
 		Province:    result.Province,
 		City:        result.City,
 		District:    result.District,
+		AreaCode:    result.AreaCode,
+		PhoneCode:   result.CityCode,
 		PostalCode:  result.ZipCode,
 		ZipCode:     result.ZipCode,
 		Latitude:    result.Latitude,
 		Longitude:   result.Longitude,
 		TimeZone:    result.TimeZone,
-		ASN:         result.ASN,
-		ISP:         result.ISP,
-		AreaCode:    result.AreaCode,
-		PhoneCode:   result.CityCode,
 		Currency:    result.Currency,
+		Flag:        flag,
 	}
 }
 
@@ -182,6 +259,45 @@ func (r *router) withLogging(next http.Handler) http.Handler {
 		next.ServeHTTP(w, req)
 		_ = started
 	})
+}
+
+func (r *router) withMetrics(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, req *http.Request) {
+		if r.shouldCountRequest(req) {
+			r.metrics.Increment()
+		}
+		next.ServeHTTP(w, req)
+	})
+}
+
+func (r *router) shouldCountRequest(req *http.Request) bool {
+	if r.metrics == nil || req.Method == http.MethodOptions {
+		return false
+	}
+
+	switch req.URL.Path {
+	case "/healthz", "/metrics", "/stats":
+		return false
+	default:
+		return true
+	}
+}
+
+func (r *router) isAuthorized(req *http.Request) bool {
+	if r.cfg.AdminToken == "" {
+		return false
+	}
+
+	token := strings.TrimSpace(req.URL.Query().Get("token"))
+	if token == "" {
+		const prefix = "Bearer "
+		auth := strings.TrimSpace(req.Header.Get("Authorization"))
+		if strings.HasPrefix(auth, prefix) {
+			token = strings.TrimSpace(strings.TrimPrefix(auth, prefix))
+		}
+	}
+
+	return token == r.cfg.AdminToken
 }
 
 func (r *router) setDatabaseHeaders(w http.ResponseWriter) {

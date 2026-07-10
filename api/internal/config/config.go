@@ -11,6 +11,7 @@ type Config struct {
 	AppHost            string
 	AppPort            string
 	PublicBaseURL      string
+	AdminToken         string
 	CORSAllowedOrigins []string
 
 	V4DBPath string
@@ -32,6 +33,11 @@ type Config struct {
 	UpdateTimezone  string
 	UpdateTimeout   time.Duration
 	UpdateUserAgent string
+
+	SSLCheckTimeout time.Duration
+
+	MetricsPath          string
+	MetricsFlushInterval time.Duration
 }
 
 func Load() Config {
@@ -39,6 +45,7 @@ func Load() Config {
 		AppHost:            env("APP_HOST", "0.0.0.0"),
 		AppPort:            env("APP_PORT", "8080"),
 		PublicBaseURL:      env("APP_PUBLIC_BASE_URL", "http://localhost:8080"),
+		AdminToken:         env("APP_ADMIN_TOKEN", ""),
 		CORSAllowedOrigins: splitCSV(env("APP_CORS_ALLOWED_ORIGINS", "http://localhost:3000")),
 		V4DBPath:           env("IP2REGION_V4_DB", "../data/ip2region_v4.xdb"),
 		V6DBPath:           env("IP2REGION_V6_DB", "../data/ip2region_v6.xdb"),
@@ -56,6 +63,12 @@ func Load() Config {
 		UpdateTimezone:     env("UPDATE_TIMEZONE", "Asia/Shanghai"),
 		UpdateTimeout:      envDuration("UPDATE_TIMEOUT", 10*time.Minute),
 		UpdateUserAgent:    env("UPDATE_USER_AGENT", "ip2region-lookup/1.0"),
+		SSLCheckTimeout:    envDuration("SSL_CHECK_TIMEOUT", 5*time.Second),
+		MetricsPath:        env("METRICS_PATH", "./data/request_metrics.json"),
+		MetricsFlushInterval: envDuration(
+			"METRICS_FLUSH_INTERVAL",
+			15*time.Second,
+		),
 	}
 }
 

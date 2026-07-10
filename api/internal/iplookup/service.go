@@ -225,7 +225,7 @@ func parseRegion(ip, family, raw string) model.LookupResult {
 		result.City = parts[2]
 		result.ISP = parts[3]
 		result.ISOCode = parts[4]
-		return result
+		return withFlag(result)
 	}
 
 	cursor := 0
@@ -242,7 +242,7 @@ func parseRegion(ip, family, raw string) model.LookupResult {
 		result.City = at(remaining, 2)
 		result.ISP = at(remaining, 3)
 		result.ISOCode = at(remaining, 4)
-		return result
+		return withFlag(result)
 	}
 
 	hasContinent := len(remaining) >= 15
@@ -262,7 +262,7 @@ func parseRegion(ip, family, raw string) model.LookupResult {
 		result.Currency = at(remaining, 12)
 		trailing := remaining[13:]
 		fillTrailing(&result, trailing)
-		return result
+		return withFlag(result)
 	}
 
 	result.Country = at(remaining, 0)
@@ -279,6 +279,17 @@ func parseRegion(ip, family, raw string) model.LookupResult {
 	result.Currency = at(remaining, 11)
 	trailing := remaining[12:]
 	fillTrailing(&result, trailing)
+	return withFlag(result)
+}
+
+func withFlag(result model.LookupResult) model.LookupResult {
+	code := result.CountryChar
+	if code == "" {
+		code = result.ISOCode
+	}
+	if code != "" {
+		result.Flag = "https://flagcdn.io/" + strings.ToLower(code) + ".svg"
+	}
 	return result
 }
 
