@@ -25,7 +25,7 @@ export const Route = createRootRoute({
       { rel: 'manifest', href: '/site.webmanifest' },
       { rel: 'stylesheet', href: '/leaflet/leaflet.css' },
       { rel: 'preconnect', href: 'https://mt1.google.com' },
-      { rel: 'preconnect', href: 'https://fonts.bluecdn.com' },
+      { rel: 'preconnect', href: 'https://fonts.googleapis.com' },
     ],
   }),
   component: Root,
