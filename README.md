@@ -151,7 +151,7 @@ caddy validate --config /etc/caddy/Caddyfile
 
 ### License
 
-Private project. All rights reserved.
+All rights reserved.
 
 ## 中文
 
@@ -289,4 +289,4 @@ caddy validate --config /etc/caddy/Caddyfile
 
 ### License
 
-Private project. All rights reserved.
+All rights reserved.
