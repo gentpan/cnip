@@ -23,8 +23,8 @@ export type MapStyleId = typeof MAP_STYLES[number]['id']
 
 const BLUE_DEFAULT_MAP_STYLE: MapStyleId = 'blue'
 const GOOGLE_MAP_STYLES = new Set<MapStyleId>(['road', 'satellite', 'terrain'])
-const BLUE_LIGHT_TILE = import.meta.env.VITE_TILE_BLUE_LIGHT || 'https://map.bluecdn.com/styles/positron/{z}/{x}/{y}@2x.png'
-const BLUE_DARK_TILE = import.meta.env.VITE_TILE_BLUE_DARK || 'https://map.bluecdn.com/styles/dark-matter/{z}/{x}/{y}@2x.png'
+const BLUE_LIGHT_TILE = import.meta.env.VITE_TILE_BLUE_LIGHT || 'https://map.bluecdn.com/styles/harmony/{z}/{x}/{y}@2x.png'
+const BLUE_DARK_TILE = import.meta.env.VITE_TILE_BLUE_DARK || 'https://map.bluecdn.com/styles/midnight/{z}/{x}/{y}@2x.png'
 
 export function normalizeMapStyle(value?: string | null): MapStyleId {
   return MAP_STYLES.some((style) => style.id === value) ? value as MapStyleId : BLUE_DEFAULT_MAP_STYLE
