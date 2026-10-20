@@ -44,8 +44,8 @@ function RootDocument({ children }: { children: ReactNode }) {
     <html lang="zh-CN">
       <head>
         <HeadContent />
-        <script defer src="https://analytics.proxypurity.com/script.js" data-website-id="1f134deb-e5d2-43aa-ad27-e833becd7661" />
-        <script defer src="https://analytics.proxypurity.com/recorder.js" data-website-id="1f134deb-e5d2-43aa-ad27-e833becd7661" />
+        <script defer src="https://stats.cleanip.io/script.js" data-website-id="1f134deb-e5d2-43aa-ad27-e833becd7661" />
+        <script defer src="https://stats.cleanip.io/recorder.js" data-website-id="1f134deb-e5d2-43aa-ad27-e833becd7661" />
       </head>
       <body>
         {children}
