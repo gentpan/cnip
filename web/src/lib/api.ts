@@ -190,7 +190,7 @@ export async function fetchRequestStats(signal?: AbortSignal): Promise<RequestSt
 }
 
 export async function fetchText(url: string) {
-  const res = await fetch(url, { cache: 'no-store' })
+  const res = await fetch(url, { cache: 'no-store', credentials: 'omit', signal: AbortSignal.timeout(8000) })
   if (!res.ok) throw new Error(`请求失败：${res.status}`)
   return (await res.text()).trim()
 }

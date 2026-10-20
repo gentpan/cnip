@@ -89,7 +89,7 @@ const endpoints: Endpoint[] = [
     method: 'GET',
     path: '/',
     title: '获取当前公网 IP',
-    desc: '返回当前请求的公网 IP，响应为 JSON，例如 {"ip":"203.0.113.10"}。如果只需要纯文本，可使用 v4.cnip.io 或 v6.cnip.io。',
+    desc: '返回当前请求的公网 IP，响应为 JSON，例如 {"ip":"203.0.113.10"}。如果只需要纯文本，可使用 v4.mypublicipnow.com 或 v6.mypublicipnow.com。',
     category: 'IP',
     responseType: 'json',
     params: [],
@@ -102,10 +102,10 @@ const quickExamples = [
   { label: '查询指定 IP', cmd: `curl "${DOCS_BASE}/geoip/8.8.8.8"` },
   { label: '查询域名归属地', cmd: `curl "${DOCS_BASE}/lookup?q=baidu.com"` },
   { label: '查询 SSL 证书', cmd: `curl "${DOCS_BASE}/ssl/example.com"` },
-  { label: '获取当前公网 IPv4', cmd: 'curl -4 "https://v4.cnip.io"' },
-  { label: '获取当前公网 IPv6', cmd: 'curl -6 "https://v6.cnip.io"' },
-  { label: '获取 IPv4（JSON 格式）', cmd: 'curl -4 "https://v4.cnip.io/json"' },
-  { label: '获取 IPv6（JSON 格式）', cmd: 'curl -6 "https://v6.cnip.io/json"' },
+  { label: '获取当前公网 IPv4', cmd: 'curl -4 "https://v4.mypublicipnow.com"' },
+  { label: '获取当前公网 IPv6', cmd: 'curl -6 "https://v6.mypublicipnow.com"' },
+  { label: '获取 IPv4（JSON 格式）', cmd: 'curl -4 "https://v4.mypublicipnow.com/json"' },
+  { label: '获取 IPv6（JSON 格式）', cmd: 'curl -6 "https://v6.mypublicipnow.com/json"' },
 ]
 
 export const Route = createFileRoute('/docs')({

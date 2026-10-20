@@ -41,3 +41,5 @@ Defaults are defined in `src/lib/api.ts`.
 - `VITE_TILE_TERRAIN`
 
 Use `.env.local` for local overrides.
+
+2026-10-17 production shared-echo release: this TanStack source is the active CNIP frontend. Both browser family probes use https://v4.mypublicipnow.com/ and https://v6.mypublicipnow.com/; api.ts fetchText omits credentials, disables caching and times out after 8 seconds. Root-level Nuxt code is historical reference.

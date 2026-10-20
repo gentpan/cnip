@@ -297,7 +297,7 @@ export function LookupView({ search }: { search: LookupSearch }) {
   useEffect(() => {
     if (!currentIpQuery.data) return
     const currentIsV6 = isIPv6(currentIpQuery.data)
-    const url = currentIsV6 ? 'https://v4.cnip.io/' : 'https://v6.cnip.io/'
+    const url = currentIsV6 ? 'https://v4.mypublicipnow.com/' : 'https://v6.mypublicipnow.com/'
     fetchText(url).then((ip) => {
       if (!ip) return
       const key = isIPv6(ip) ? 'v6' : 'v4'
